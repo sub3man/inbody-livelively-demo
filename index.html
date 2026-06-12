@@ -337,6 +337,18 @@ html,body{word-break:keep-all;}
   .rm>div[style*="font-size:36px"]{display:none;}
   .tl-lbl{font-size:10px;}
 }
+@media(max-width:960px){
+  body{overflow-x:hidden;}
+  .g2>*,.g3>*,.g4>*,.calc-grid>*{min-width:0;}
+  .card,.role-card{min-width:0;max-width:100%;}
+  .row{flex-wrap:wrap;}
+  /* simulator result panels: stack & kill inline 3-col grid */
+  .calc-grid div[style*="repeat(3,1fr)"]{grid-template-columns:1fr!important;gap:18px!important;padding:18px!important;}
+  .calc-grid div[style*="border-left:1px solid"]{border-left:none!important;border-right:none!important;border-top:1px solid var(--border-s)!important;border-bottom:1px solid var(--border-s)!important;padding:14px 0!important;}
+  .calc-grid div[style*="font-size:34px"]{font-size:28px!important;}
+  /* risk sim result row can wrap */
+  #rs-badge{flex-shrink:0;}
+}
 @media(max-width:520px){
   .loop{grid-template-columns:1fr;}
   .kpi-strip{grid-template-columns:1fr;}
