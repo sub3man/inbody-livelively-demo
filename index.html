@@ -345,8 +345,8 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
   <div class="home-header mb20">
     <div class="home-header-l">
       <div class="home-eyebrow">InBody × 리브라이블리 파트너십</div>
-      <h1 class="home-title">정밀 측정을<br>실제 건강성과로 연결합니다</h1>
-      <p class="home-desc mb16">InBody의 임상 신뢰도 높은 체성분 데이터를 리브라이블리의 방문운동 운영체계와 연결해, 측정→개입→재측정의 완결된 루프를 고령자 생활현장에서 실증합니다.</p>
+      <h1 class="home-title">측정 1회가,<br>1년 내내 반복되는 서비스가 됩니다</h1>
+      <p class="home-desc mb16">InBody 측정은 대부분 1회로 끝납니다. 리브라이블리는 그 측정을 위험군 분류 → 방문운동 → <b style="color:var(--brand);">12주마다 재측정</b>으로 되돌아오는 폐쇄루프로 만들어, 서울시 통합돌봄 현장에서 InBody 데이터의 반복 가치를 실증합니다.</p>
       <div style="display:flex;gap:8px;">
         <button class="btn btn-primary btn-sm" onclick="go('cf')">CareFlow OS 보기</button>
         <button class="btn btn-ghost btn-sm" onclick="go('rpt')">성과 리포트</button>
@@ -359,6 +359,16 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
       <div class="home-stat-row"><span class="home-stat-k">방문운동 완수</span><span class="home-stat-v">830건 · 민원 0</span></div>
       <div class="home-stat-row"><span class="home-stat-k">코치 네트워크</span><span class="home-stat-v">300명+ (즉시 투입)</span></div>
       <div class="home-stat-row"><span class="home-stat-k">PoC 시작</span><span class="home-stat-v">2026.07.20</span></div>
+    </div>
+  </div>
+
+  <!-- Hero photo banner -->
+  <div style="position:relative;border-radius:var(--r);overflow:hidden;margin-bottom:20px;height:300px;">
+    <img src="photo-hero.jpg" alt="고령자 방문운동 현장" style="width:100%;height:100%;object-fit:cover;object-position:center 35%;">
+    <div style="position:absolute;inset:0;background:linear-gradient(90deg,rgba(6,26,61,.82) 0%,rgba(6,26,61,.45) 45%,rgba(6,26,61,0) 75%);"></div>
+    <div style="position:absolute;left:32px;bottom:28px;right:32px;color:white;">
+      <div style="font-size:11px;font-weight:700;letter-spacing:.06em;color:rgba(255,255,255,.55);margin-bottom:8px;">FIELD · 리브라이블리 방문운동 현장</div>
+      <div style="font-size:22px;font-weight:800;letter-spacing:-0.02em;line-height:1.4;max-width:560px;">코치가 측정값을 들고 어르신의 거실로 갑니다.<br>측정이 운동이 되고, 운동이 다시 측정으로 돌아옵니다.</div>
     </div>
   </div>
 
@@ -467,21 +477,44 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
       <div style="font-size:12px;color:var(--muted);">측정 데이터가 반복 서비스가 되는 순간, 기기의 가치도 반복됩니다</div>
     </div>
     <div class="g4">
-      <div class="card card-p">
-        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">① 데이터 플라이휠</div>
-        <div style="font-size:13px;line-height:1.65;color:var(--body);">1회 측정이 12주마다 재측정으로 반복. 고령자 종단 데이터가 InBody 데이터 자산으로 축적.</div>
-      </div>
-      <div class="card card-p">
-        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">② 기기 · 측정 수요</div>
-        <div style="font-size:13px;line-height:1.65;color:var(--body);">자치구·복지관·데이케어 거점마다 측정 수요 창출. PoC가 곧 신규 채널 실증.</div>
-      </div>
-      <div class="card card-p">
-        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">③ B2G 시장 진입</div>
-        <div style="font-size:13px;line-height:1.65;color:var(--body);">2026 통합돌봄 본사업의 공공 조달·결과보고 체계를 갖춘 파트너를 통한 즉시 진입.</div>
-      </div>
       <div class="card card-p" style="background:var(--tint);border-color:transparent;">
-        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">④ 대표 성공 사례</div>
-        <div style="font-size:13px;line-height:1.65;color:var(--body);">"측정이 성과가 된" InBodyLIKE 1기 쇼케이스. 4개월 내 결과보고서로 완결.</div>
+        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">① 근감소증 어젠다의 현장 증거</div>
+        <div style="font-size:13px;line-height:1.65;color:var(--body);">SMI — InBody가 만든 지표 — 가 공공 돌봄의 표준 관리지표로 쓰이는 실제 레퍼런스. 측정→개입→개선의 종단 데이터 확보.</div>
+      </div>
+      <div class="card card-p">
+        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">② 기기 1대의 생애가치 확대</div>
+        <div style="font-size:13px;line-height:1.65;color:var(--body);">1회 측정으로 끝나던 고령자가 12주마다 재측정으로 복귀. 자치구·복지관 거점마다 신규 측정 수요.</div>
+      </div>
+      <div class="card card-p">
+        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">③ B2G 통합돌봄 채널</div>
+        <div style="font-size:13px;line-height:1.65;color:var(--body);">2026 전국 본사업이 열리는 해. 공공 조달·결과보고·정산 체계를 이미 갖춘 파트너를 통한 즉시 진입.</div>
+      </div>
+      <div class="card card-p">
+        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">④ 공동 브랜드 리포트</div>
+        <div style="font-size:13px;line-height:1.65;color:var(--body);">InBody 데이터가 들어간 성과보고서가 지자체 · 병원 · 보호자에게 분기마다 도달. 가장 신뢰받는 형태의 브랜드 노출.</div>
+      </div>
+    </div>
+
+    <!-- Field photo strip -->
+    <div style="margin-top:20px;">
+      <div class="sec-title mb12">이미 돌아가고 있는 현장</div>
+      <div class="g4">
+        <div style="border-radius:10px;overflow:hidden;position:relative;height:190px;">
+          <img src="photo-visit.jpg" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;left:0;right:0;bottom:0;padding:24px 12px 10px;background:linear-gradient(180deg,transparent,rgba(6,26,61,.75));color:white;font-size:12px;font-weight:700;">재가 방문운동 · 1:1 코칭</div>
+        </div>
+        <div style="border-radius:10px;overflow:hidden;position:relative;height:190px;">
+          <img src="photo-group.jpg" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;left:0;right:0;bottom:0;padding:24px 12px 10px;background:linear-gradient(180deg,transparent,rgba(6,26,61,.75));color:white;font-size:12px;font-weight:700;">기관 그룹 프로그램 운영</div>
+        </div>
+        <div style="border-radius:10px;overflow:hidden;position:relative;height:190px;">
+          <img src="photo-measure.jpg" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;left:0;right:0;bottom:0;padding:24px 12px 10px;background:linear-gradient(180deg,transparent,rgba(6,26,61,.75));color:white;font-size:12px;font-weight:700;">기능평가 · 운동 지도</div>
+        </div>
+        <div style="border-radius:10px;overflow:hidden;position:relative;height:190px;">
+          <img src="photo-kriee.jpg" style="width:100%;height:100%;object-fit:cover;">
+          <div style="position:absolute;left:0;right:0;bottom:0;padding:24px 12px 10px;background:linear-gradient(180deg,transparent,rgba(6,26,61,.75));color:white;font-size:12px;font-weight:700;">KRIEE 운동지도자 교육</div>
+        </div>
       </div>
     </div>
     <div style="margin-top:16px;background:var(--navy);border-radius:var(--r);padding:22px 26px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
@@ -989,7 +1022,7 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
       <div class="card card-p">
         <div class="label mb12">담당 코치</div>
         <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
-          <div class="cf-av">이지</div>
+          <img src="photo-coach.jpg" alt="코치" style="width:42px;height:42px;border-radius:50%;object-fit:cover;object-position:center 20%;flex-shrink:0;">
           <div>
             <div style="font-size:14px;font-weight:800;color:var(--ink);">이지연 코치</div>
             <div style="font-size:11px;color:var(--faint);">KRIEE 2급 · 노인운동전문 · 5년 경력</div>
@@ -1252,13 +1285,17 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
       <div class="rm-row"><div class="rm-yr">11월</div><div><div class="rm-t">재측정 · 성과 공유회 (W11~12)</div><div class="rm-d">InBody 재측정, 공동 결과보고서, 11월 4주차 최종 성과 공유회 발표</div></div></div>
     </div>
     <div style="display:flex;flex-direction:column;gap:16px;">
-      <div class="card card-p" style="background:var(--navy);border-color:var(--navy);">
+      <div class="card card-p" style="background:var(--navy);border-color:var(--navy);position:relative;overflow:hidden;">
+        <img src="photo-visit.jpg" style="position:absolute;inset:0;width:100%;height:100%;object-fit:cover;opacity:.18;">
+        <div style="position:absolute;inset:0;background:linear-gradient(105deg,rgba(6,26,61,.92) 35%,rgba(6,26,61,.55));"></div>
+        <div style="position:relative;">
         <div style="font-size:10px;color:rgba(255,255,255,.35);font-weight:700;letter-spacing:.08em;margin-bottom:12px;">WHY LIVELIVELY</div>
         <div style="font-size:17px;font-weight:800;line-height:1.55;color:white;letter-spacing:-0.02em;">측정 제휴 파트너는 많습니다.<br>공공 행정·결과보고·정산까지<br><span style="color:#7FA8FF;">완결하는 운영 파트너</span>는 드뭅니다.</div>
         <div style="margin-top:14px;display:flex;gap:14px;flex-wrap:wrap;">
           <div><div style="font-size:20px;font-weight:800;color:white;">8개구</div><div style="font-size:10px;color:rgba(255,255,255,.45);">2026 수행기관</div></div>
           <div><div style="font-size:20px;font-weight:800;color:white;">830건·민원0</div><div style="font-size:10px;color:rgba(255,255,255,.45);">동대문구 완수</div></div>
           <div><div style="font-size:20px;font-weight:800;color:white;">300+</div><div style="font-size:10px;color:rgba(255,255,255,.45);">코치 네트워크</div></div>
+        </div>
         </div>
       </div>
       <div class="card card-p">
