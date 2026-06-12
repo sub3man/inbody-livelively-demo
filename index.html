@@ -428,7 +428,45 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
     </div>
   </div>
 
-  <!-- Role split + metrics -->
+
+  <!-- Risk classifier demo -->
+  <div class="card mb20">
+    <div class="card-hd">
+      <span style="font-size:14px;font-weight:800;color:var(--ink);text-transform:none;letter-spacing:-0.01em;">위험도 분류 미리보기 — InBody 측정값을 넣어보세요</span>
+      <span style="font-size:11px;color:var(--faint);font-weight:400;">STEP 02의 분류 로직 체험 · 예시 기준</span>
+    </div>
+    <div class="calc-grid">
+      <div style="padding:20px;border-right:1px solid var(--border-s);">
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--body);margin-bottom:6px;"><span>골격근량 SMI <span style="color:var(--brand);font-size:10px;">InBody</span></span><span style="color:var(--brand);" id="rs-smi-v">5.8 kg/m²</span></div>
+          <input type="range" id="rs-smi" min="4.0" max="9.0" step="0.1" value="5.8" style="width:100%;accent-color:var(--brand);" oninput="riskCalc()">
+        </div>
+        <div style="margin-bottom:16px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--body);margin-bottom:6px;"><span>악력</span><span style="color:var(--brand);" id="rs-grip-v">17 kg</span></div>
+          <input type="range" id="rs-grip" min="8" max="40" step="1" value="17" style="width:100%;accent-color:var(--brand);" oninput="riskCalc()">
+        </div>
+        <div style="margin-bottom:6px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--body);margin-bottom:6px;"><span>보행속도</span><span style="color:var(--brand);" id="rs-gait-v">0.75 m/s</span></div>
+          <input type="range" id="rs-gait" min="0.3" max="1.6" step="0.05" value="0.75" style="width:100%;accent-color:var(--brand);" oninput="riskCalc()">
+        </div>
+        <div style="font-size:11px;color:var(--faint);line-height:1.6;margin-top:12px;">* 이해를 돕기 위한 예시 기준입니다. 실제 분류는 연령·성별·기능평가를 종합하며, 의료적 진단이 아닙니다.</div>
+      </div>
+      <div style="padding:24px;display:flex;flex-direction:column;justify-content:center;gap:14px;">
+        <div style="display:flex;align-items:center;gap:14px;">
+          <span style="font-size:12px;font-weight:700;color:var(--muted);">분류 결과</span>
+          <span class="rp rp-h" id="rs-badge" style="font-size:14px;padding:5px 16px;">고위험</span>
+          <div style="flex:1;height:10px;border-radius:5px;background:linear-gradient(90deg,#3B82F6,#FACC15,#EF4444);position:relative;">
+            <div id="rs-marker" style="position:absolute;top:-4px;left:80%;width:18px;height:18px;border-radius:50%;background:white;border:3px solid var(--ink);transform:translateX(-50%);transition:left .3s;"></div>
+          </div>
+        </div>
+        <div id="rs-plan" style="background:var(--tint);border-radius:10px;padding:14px 16px;font-size:13px;line-height:1.7;color:var(--body);">
+          <b style="color:var(--brand);">권장 개입 —</b> 주 1회 방문운동 10회 + 생활습관 코칭, 6주차 중간 기능평가, 12주차 InBody 재측정
+        </div>
+        <div style="font-size:12px;color:var(--muted);line-height:1.6;">측정값이 바뀌면 개입 강도와 재측정 주기가 자동으로 조정됩니다. 이 분류가 CareFlow OS의 코치 배정과 일정으로 이어집니다.</div>
+      </div>
+    </div>
+  </div>
+\n  <!-- Role split + metrics -->
   <div class="g2">
     <div style="display:flex;flex-direction:column;gap:16px;">
       <div class="role-card">
@@ -1228,6 +1266,49 @@ button{font-family:inherit;cursor:pointer;border:none;background:none;}
     </div>
   </div>
 
+
+  <!-- Co-branded report preview -->
+  <div class="g2" style="margin-top:20px;">
+    <div style="border:1px solid var(--border);border-radius:var(--r);overflow:hidden;background:white;box-shadow:0 14px 40px rgba(12,24,48,.10);">
+      <div style="background:var(--navy);padding:16px 22px;display:flex;align-items:center;justify-content:space-between;">
+        <div style="display:flex;align-items:center;gap:9px;">
+          <span style="background:white;color:#0031B0;font-size:10px;font-weight:800;padding:3px 8px;border-radius:4px;">InBody</span>
+          <span style="color:rgba(255,255,255,.35);font-size:12px;">×</span>
+          <span style="color:rgba(255,255,255,.9);font-size:12px;font-weight:700;">리브라이블리</span>
+        </div>
+        <span style="color:rgba(255,255,255,.5);font-size:10px;font-weight:700;letter-spacing:.06em;">12주 성과 리포트 · 개인용</span>
+      </div>
+      <div style="padding:20px 22px;">
+        <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:4px;">
+          <span style="font-size:18px;font-weight:800;color:var(--ink);">김순자 님</span>
+          <span style="font-size:12px;color:var(--muted);">75세 · 여 · 동대문구</span>
+          <span class="rp rp-m" style="margin-left:auto;">중위험</span>
+        </div>
+        <div style="font-size:11px;color:var(--faint);margin-bottom:14px;">2026.07.28 ~ 2026.10.17 · 방문운동 10회 완료 · 담당 이지연 코치</div>
+        <div style="display:flex;flex-direction:column;gap:9px;">
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="font-weight:700;">골격근량 SMI <span style="color:var(--brand);font-size:10px;">InBody</span></span><span>5.2 → <b style="color:var(--brand);">6.1 kg/m²</b></span></div><div style="height:9px;border-radius:5px;background:var(--border-s);"><div style="width:76%;height:100%;border-radius:5px;background:var(--brand);"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="font-weight:700;">악력</span><span>15.2 → <b style="color:var(--brand);">19.4 kg</b></span></div><div style="height:9px;border-radius:5px;background:var(--border-s);"><div style="width:64%;height:100%;border-radius:5px;background:#4D84FF;"></div></div></div>
+          <div><div style="display:flex;justify-content:space-between;font-size:12px;margin-bottom:3px;"><span style="font-weight:700;">보행속도</span><span>0.78 → <b style="color:var(--brand);">0.98 m/s</b></span></div><div style="height:9px;border-radius:5px;background:var(--border-s);"><div style="width:70%;height:100%;border-radius:5px;background:#95BAFF;"></div></div></div>
+        </div>
+        <div class="coach-quote" style="margin-top:14px;">&ldquo;의자에서 혼자 일어나시는 횟수가 2배가 됐어요. 다음 주기는 균형 훈련 비중을 높입니다.&rdquo;</div>
+        <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border-s);display:flex;justify-content:space-between;align-items:center;">
+          <span style="font-size:10px;color:var(--faint);">본 리포트는 InBody 측정 데이터를 기반으로 생성되며, 의료적 진단이 아닙니다.</span>
+          <span style="font-size:10px;font-weight:700;color:var(--brand);">CareFlow OS 자동 생성</span>
+        </div>
+      </div>
+    </div>
+    <div style="display:flex;flex-direction:column;justify-content:center;gap:14px;padding:8px 8px 8px 4px;">
+      <div class="sec-title">이 리포트가 InBody의 이름으로<br>분기마다 도달하는 곳</div>
+      <div style="display:flex;flex-direction:column;gap:8px;">
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--body);"><span class="badge badge-blue" style="min-width:64px;justify-content:center;">대상자</span>변화를 숫자로 확인 &rarr; 재측정 동기 부여</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--body);"><span class="badge badge-blue" style="min-width:64px;justify-content:center;">보호자</span>가족 안심 + InBody 브랜드 신뢰 경험</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--body);"><span class="badge badge-blue" style="min-width:64px;justify-content:center;">자치구</span>예산 성과 증빙 &rarr; 차년도 사업 확대 근거</div>
+        <div style="display:flex;align-items:center;gap:10px;font-size:13px;color:var(--body);"><span class="badge badge-blue" style="min-width:64px;justify-content:center;">병원·보험</span>도입 의사결정용 효과 데이터</div>
+      </div>
+      <div style="font-size:12px;color:var(--muted);line-height:1.7;">광고가 아니라 <b style="color:var(--ink);">성과 문서</b>로 전달되는 브랜드 노출 — 12주마다, 모든 참여자에게 반복됩니다.</div>
+    </div>
+  </div>
+
   <!-- field banner (rpt) -->
   <div style="position:relative;border-radius:var(--r);overflow:hidden;margin-top:20px;height:230px;">
     <img src="photo-visit.jpg" style="width:100%;height:100%;object-fit:cover;object-position:center 45%;">
@@ -1542,6 +1623,51 @@ function initRpt(){
     }
   });
 }
+
+// — Risk classifier demo —
+function riskCalc(){
+  const smi=+document.getElementById('rs-smi').value;
+  const grip=+document.getElementById('rs-grip').value;
+  const gait=+document.getElementById('rs-gait').value;
+  document.getElementById('rs-smi-v').textContent=smi.toFixed(1)+' kg/m\u00b2';
+  document.getElementById('rs-grip-v').textContent=grip+' kg';
+  document.getElementById('rs-gait-v').textContent=gait.toFixed(2)+' m/s';
+  let sc=0;
+  sc+=smi<5.7?2:(smi<6.8?1:0);
+  sc+=grip<18?2:(grip<26?1:0);
+  sc+=gait<0.8?2:(gait<1.0?1:0);
+  const badge=document.getElementById('rs-badge'),plan=document.getElementById('rs-plan'),mk=document.getElementById('rs-marker');
+  let cls,txt,pos,planTxt;
+  if(sc>=4){cls='rp rp-h';txt='고위험';pos=88;planTxt='<b style="color:var(--brand);">권장 개입 —</b> 주 1회 방문운동 10회 + 생활습관 코칭, 6주차 중간 기능평가, 12주차 InBody 재측정';}
+  else if(sc>=2){cls='rp rp-m';txt='중위험';pos=52;planTxt='<b style="color:var(--brand);">권장 개입 —</b> 방문운동 8회 + 자가운동 병행, 12주차 InBody 재측정';}
+  else{cls='rp rp-w';txt='관찰군';pos=14;planTxt='<b style="color:var(--brand);">권장 개입 —</b> 그룹 프로그램 연계 + 분기 1회 InBody 측정 모니터링';}
+  badge.className=cls;badge.style.cssText='font-size:14px;padding:5px 16px;';badge.textContent=txt;
+  mk.style.left=pos+'%';plan.innerHTML=planTxt;
+}
+if(document.getElementById('rs-smi'))riskCalc();
+
+// — Guided tour nav —
+const TOUR=['home','cf','nc','rpt','ask'];
+const TOURL={home:'\ud30c\ud2b8\ub108\uc2ed \uac1c\uc694',cf:'CareFlow OS',nc:'NoriCare \uc571',rpt:'\uc131\uacfc \ub9ac\ud3ec\ud2b8',ask:'\ud611\uc5c5 \uc81c\uc548'};
+const tourBtn=document.createElement('button');
+tourBtn.id='tour-next';
+tourBtn.style.cssText='position:fixed;right:24px;bottom:24px;z-index:300;background:var(--brand);color:white;border:none;border-radius:99px;height:44px;padding:0 20px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,89,255,.35);cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;';
+document.body.appendChild(tourBtn);
+function curTab(){const t=(location.hash||'#home').replace('#','');return TOUR.includes(t)?t:'home';}
+function tourUpdate(){
+  const i=TOUR.indexOf(curTab());
+  const next=TOUR[(i+1)%TOUR.length];
+  tourBtn.innerHTML=(i===TOUR.length-1?'\ucc98\uc74c\uc73c\ub85c':'\ub2e4\uc74c: '+TOURL[next])+' <span style="font-size:15px;">\u2192</span>';
+  tourBtn.onclick=()=>go(next);
+}
+tourUpdate();
+const _go=go;go=function(id){_go(id);tourUpdate();};
+document.addEventListener('keydown',e=>{
+  if(e.target.tagName==='INPUT'||e.target.tagName==='TEXTAREA')return;
+  const i=TOUR.indexOf(curTab());
+  if(e.key==='ArrowRight')go(TOUR[(i+1)%TOUR.length]);
+  if(e.key==='ArrowLeft')go(TOUR[(i-1+TOUR.length)%TOUR.length]);
+});
 </script>
 </body>
 </html>
