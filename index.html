@@ -1,0 +1,1470 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>InBody × 리브라이블리 — 측정을 건강성과로 연결하는 협업 데모</title>
+<meta name="description" content="InBody 정밀 측정 데이터를 고령자 생활현장의 방문운동·재측정 성과로 전환하는 InBodyLIKE 협업 시나리오 데모">
+<meta property="og:title" content="InBody × 리브라이블리 협업 데모">
+<meta property="og:description" content="측정 → 위험분류 → 방문운동 → 재측정 → 리포트. 정밀 측정을 실제 건강성과로.">
+<link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230059FF'/><text x='50' y='68' font-size='52' font-weight='800' text-anchor='middle' fill='white' font-family='sans-serif'>리</text></svg>">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable.min.css">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
+<style>
+:root{
+  --brand:#0059FF; --navy:#061A3D; --ink:#0C1830;
+  --body:#373737; --muted:#6B7380; --faint:#A0AABB;
+  --tint:#F3F7FF; --tint2:#E5EDFF;
+  --border:#E2E8F0; --border-s:#EEF2F8;
+  --bg:#FFFFFF; --bg-alt:#F8FAFC;
+  --danger:#E15745; --warn:#D97706;
+  --r:12px; --dur:180ms;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{
+  font-family:"Pretendard Variable","Pretendard",-apple-system,sans-serif;
+  font-size:14px; color:var(--body); background:var(--bg-alt);
+  -webkit-font-smoothing:antialiased; letter-spacing:-0.01em;
+}
+a{color:inherit;text-decoration:none;}
+button{font-family:inherit;cursor:pointer;border:none;background:none;}
+
+/* NAV */
+.nav{
+  height:52px; background:var(--navy);
+  display:flex; align-items:center; padding:0 24px;
+  position:sticky; top:0; z-index:200;
+}
+.nav-logo{display:flex;align-items:center;gap:10px;margin-right:32px;}
+.nav-ib{background:white;color:#0031B0;font-size:11px;font-weight:800;padding:3px 9px;border-radius:5px;letter-spacing:0;}
+.nav-x{color:rgba(255,255,255,.3);font-size:14px;font-weight:300;}
+.nav-ll{color:rgba(255,255,255,.85);font-size:13px;font-weight:600;}
+.nav-tabs{display:flex;height:52px;}
+.ntab{
+  padding:0 16px; display:flex; align-items:center;
+  color:rgba(255,255,255,.45); font-size:13px; font-weight:500;
+  border-bottom:2px solid transparent; cursor:pointer;
+  transition:color var(--dur), border-color var(--dur);
+}
+.ntab:hover{color:rgba(255,255,255,.8);}
+.ntab.on{color:white;border-bottom-color:var(--brand);}
+.nav-end{margin-left:auto;display:flex;align-items:center;gap:8px;}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#34D399;animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.3}}
+.nav-tag{border:1px solid rgba(255,255,255,.15);color:rgba(255,255,255,.5);font-size:11px;font-weight:600;padding:3px 10px;border-radius:99px;display:flex;align-items:center;gap:5px;}
+
+/* VIEWS */
+.view{display:none;}
+.view.on{display:block;animation:up .25s ease;}
+@keyframes up{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+
+/* LAYOUT UTILS */
+.wrap{max-width:1360px;margin:0 auto;padding:28px;}
+.row{display:flex;gap:20px;}
+.col{flex:1;min-width:0;}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:20px;}
+.g3{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;}
+.g4{display:grid;grid-template-columns:repeat(4,1fr);gap:16px;}
+.mb4{margin-bottom:4px;}
+.mb8{margin-bottom:8px;}
+.mb12{margin-bottom:12px;}
+.mb16{margin-bottom:16px;}
+.mb20{margin-bottom:20px;}
+.mb24{margin-bottom:24px;}
+
+/* CARDS */
+.card{background:white;border:1px solid var(--border);border-radius:var(--r);}
+.card-p{padding:20px;}
+.card-hd{
+  padding:14px 20px 13px; border-bottom:1px solid var(--border-s);
+  font-size:12px;font-weight:700;color:var(--muted);
+  display:flex;align-items:center;gap:12px;
+}
+
+/* TYPOGRAPHY */
+.pg-title{font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-0.025em;line-height:1.2;}
+.pg-sub{font-size:13px;color:var(--muted);margin-top:4px;}
+.sec-title{font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-0.02em;}
+.label{font-size:11px;font-weight:700;color:var(--muted);letter-spacing:.03em;text-transform:uppercase;}
+.num{font-size:32px;font-weight:800;color:var(--ink);letter-spacing:-0.04em;font-variant-numeric:tabular-nums;line-height:1;}
+.num-brand{color:var(--brand);}
+.num-sm{font-size:22px;font-weight:800;letter-spacing:-0.03em;font-variant-numeric:tabular-nums;}
+
+/* BADGES */
+.badge{display:inline-flex;align-items:center;height:22px;padding:0 9px;border-radius:99px;font-size:11px;font-weight:700;}
+.badge-blue{background:var(--tint2);color:var(--brand);}
+.badge-blue-solid{background:var(--brand);color:white;}
+.badge-gray{background:var(--border-s);color:var(--muted);}
+.badge-green{background:#DCFCE7;color:#15803D;}
+.badge-red{background:#FEE2E2;color:#B91C1C;}
+.badge-amber{background:#FEF3C7;color:#92400E;}
+
+/* RISK PILLS */
+.rp{display:inline-block;padding:2px 9px;border-radius:99px;font-size:11px;font-weight:700;}
+.rp-h{background:#FEE2E2;color:#B91C1C;}
+.rp-m{background:#FEF9C3;color:#854D0E;}
+.rp-w{background:var(--tint2);color:var(--brand);}
+
+/* BUTTONS */
+.btn{display:inline-flex;align-items:center;gap:6px;height:36px;padding:0 16px;border-radius:8px;font-size:13px;font-weight:600;border:none;cursor:pointer;transition:opacity var(--dur);}
+.btn:hover{opacity:.85;}
+.btn-primary{background:var(--brand);color:white;}
+.btn-ghost{background:white;color:var(--body);border:1px solid var(--border);}
+.btn-sm{height:30px;padding:0 12px;font-size:12px;}
+
+/* TABLE */
+.tbl{width:100%;border-collapse:collapse;}
+.tbl th{padding:10px 16px;font-size:11px;font-weight:700;color:var(--muted);text-align:left;background:var(--bg-alt);border-bottom:1px solid var(--border);white-space:nowrap;}
+.tbl td{padding:12px 16px;border-bottom:1px solid var(--border-s);font-size:13px;vertical-align:middle;}
+.tbl tbody tr:last-child td{border-bottom:none;}
+.tbl tbody tr:hover td{background:#FAFBFF;cursor:pointer;}
+
+/* DIVIDER */
+.div{height:1px;background:var(--border-s);margin:0;}
+
+/* CHIP TABS */
+.chip-row{display:flex;gap:4px;}
+.chip-tab{height:26px;padding:0 12px;border-radius:99px;font-size:12px;font-weight:600;cursor:pointer;border:1px solid var(--border);background:white;color:var(--muted);transition:all var(--dur);}
+.chip-tab:hover{border-color:var(--brand);color:var(--brand);}
+.chip-tab.on{background:var(--brand);color:white;border-color:var(--brand);}
+
+/* PROGRESS BAR */
+.prog{height:4px;background:var(--border-s);border-radius:2px;overflow:hidden;}
+.prog-fill{height:100%;border-radius:2px;width:0;transition:width .9s cubic-bezier(.22,.61,.36,1);}
+
+/* SPARKLINE */
+.spk{display:block;}
+
+/* PULSE for active badge */
+@keyframes badgepulse{0%,100%{opacity:1}50%{opacity:.6}}
+.badge-live{animation:badgepulse 2s infinite;}
+
+/* COACH QUOTE */
+.coach-quote{
+  border-left:3px solid var(--brand);
+  padding:10px 12px;background:var(--bg-alt);
+  border-radius:0 8px 8px 0;
+  font-size:13px;line-height:1.75;color:var(--body);
+  font-style:italic;
+}
+
+/* ═══════════════════ HOME ═══════════════════ */
+.home-header{
+  background:white;border:1px solid var(--border);border-radius:var(--r);
+  padding:32px 36px 28px; margin-bottom:20px;
+  display:flex; align-items:flex-start; gap:40px;
+}
+.home-header-l{flex:1;}
+.home-eyebrow{
+  display:inline-flex;align-items:center;gap:7px;
+  font-size:11px;font-weight:700;color:var(--brand);
+  letter-spacing:.04em;margin-bottom:14px;
+}
+.home-eyebrow::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--brand);flex-shrink:0;}
+.home-title{font-size:28px;font-weight:900;color:var(--ink);letter-spacing:-0.03em;line-height:1.2;margin-bottom:10px;}
+.home-desc{font-size:14px;color:var(--muted);line-height:1.75;max-width:560px;}
+.home-header-r{
+  flex-shrink:0;width:280px;
+  background:var(--navy);border-radius:10px;
+  padding:18px 20px;color:white;
+}
+.home-stat-row{display:flex;justify-content:space-between;padding:10px 0;border-bottom:1px solid rgba(255,255,255,.08);}
+.home-stat-row:last-child{border-bottom:none;}
+.home-stat-k{font-size:11px;color:rgba(255,255,255,.5);font-weight:600;}
+.home-stat-v{font-size:13px;font-weight:700;color:white;}
+
+/* LOOP */
+.loop{display:grid;grid-template-columns:repeat(5,1fr);gap:0;background:white;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px;}
+.loop-step{padding:18px 16px;border-right:1px solid var(--border-s);position:relative;}
+.loop-step:last-child{border-right:none;background:var(--brand);}
+.loop-n{font-size:10px;font-weight:700;color:var(--faint);letter-spacing:.05em;margin-bottom:10px;}
+.loop-step:last-child .loop-n{color:rgba(255,255,255,.5);}
+.loop-icon{width:28px;height:28px;border-radius:7px;background:var(--bg-alt);display:flex;align-items:center;justify-content:center;margin-bottom:10px;}
+.loop-step:last-child .loop-icon{background:rgba(255,255,255,.15);}
+.loop-t{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:4px;}
+.loop-step:last-child .loop-t{color:white;}
+.loop-d{font-size:11px;color:var(--muted);line-height:1.5;}
+.loop-step:last-child .loop-d{color:rgba(255,255,255,.65);}
+.loop-arr{position:absolute;right:-8px;top:50%;transform:translateY(-50%);z-index:2;background:white;border:1px solid var(--border);border-radius:50%;width:16px;height:16px;display:flex;align-items:center;justify-content:center;}
+.loop-step:last-child .loop-arr{display:none;}
+
+/* ROLE SPLIT */
+.role-card{border:1px solid var(--border);border-radius:var(--r);overflow:hidden;}
+.role-hd{padding:14px 18px;font-size:12px;font-weight:800;letter-spacing:.02em;border-bottom:1px solid var(--border-s);}
+.role-ib-hd{background:#EFF6FF;color:#1D4ED8;}
+.role-ll-hd{background:#ECFDF5;color:#065F46;}
+.role-body{padding:16px 18px;}
+.role-item{display:flex;align-items:flex-start;gap:9px;padding:7px 0;border-bottom:1px solid var(--border-s);font-size:13px;}
+.role-item:last-child{border-bottom:none;}
+.role-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;margin-top:6px;}
+
+/* ═══════════════════ CAREFLOW ═══════════════════ */
+.cf-shell{border:1px solid rgba(0,0,0,.15);border-radius:14px;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,.2);}
+.chrome-bar{background:#292a2d;height:40px;display:flex;align-items:center;padding:0 14px;gap:8px;}
+.cdots{display:flex;gap:6px;margin-right:10px;}
+.cdot{width:11px;height:11px;border-radius:50%;}
+.chrome-url{flex:1;height:26px;background:#3c3d3f;border-radius:13px;display:flex;align-items:center;padding:0 12px;gap:7px;font-size:11px;color:#bdc1c6;font-family:system-ui,sans-serif;}
+.cf-body{display:flex;min-height:640px;background:var(--bg-alt);}
+
+/* SIDEBAR */
+.cf-sb{width:232px;background:white;border-right:1px solid var(--border-s);display:flex;flex-direction:column;padding:14px 10px;flex-shrink:0;}
+.cf-sb-logo{display:flex;align-items:center;gap:9px;padding:4px 8px 14px;border-bottom:1px solid var(--border-s);margin-bottom:8px;}
+.cf-mark{width:28px;height:28px;border-radius:7px;background:var(--brand);color:white;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.cf-mark-txt{font-size:12px;font-weight:800;color:var(--ink);letter-spacing:-0.01em;}
+.cf-nav-item{display:flex;align-items:center;gap:9px;padding:9px 10px;border-radius:8px;font-size:13px;font-weight:500;color:var(--muted);transition:all var(--dur);margin-bottom:1px;width:100%;}
+.cf-nav-item:hover{background:var(--bg-alt);color:var(--body);}
+.cf-nav-item.on{background:var(--tint2);color:var(--brand);font-weight:700;}
+.cf-nb{margin-left:auto;background:var(--brand);color:white;font-size:10px;font-weight:800;padding:1px 6px;border-radius:99px;min-width:18px;text-align:center;}
+.cf-sb-foot{margin-top:auto;padding:12px 8px 4px;border-top:1px solid var(--border-s);}
+.cf-av{width:28px;height:28px;border-radius:50%;background:var(--brand);color:white;font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+
+/* TOPBAR */
+.cf-top{height:56px;background:white;border-bottom:1px solid var(--border-s);display:flex;align-items:center;padding:0 24px;gap:16px;}
+.cf-search{flex:1;max-width:360px;height:34px;background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;display:flex;align-items:center;padding:0 12px;gap:8px;color:var(--faint);font-size:13px;}
+
+/* MAIN */
+.cf-main{flex:1;display:flex;flex-direction:column;}
+.cf-content{padding:20px 24px;flex:1;}
+
+/* KPI STRIP */
+.kpi-strip{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid var(--border);border-radius:var(--r);overflow:hidden;margin-bottom:20px;background:white;}
+.kpi-item{padding:18px 20px;border-right:1px solid var(--border-s);}
+.kpi-item:last-child{border-right:none;}
+.kpi-lbl{font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;}
+.kpi-val{font-size:26px;font-weight:800;color:var(--ink);letter-spacing:-0.04em;font-variant-numeric:tabular-nums;line-height:1;margin-bottom:5px;}
+.kpi-sub{font-size:11px;color:var(--faint);}
+.kpi-delta{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:700;color:var(--brand);}
+
+/* SCHEDULE */
+.sched-row{display:grid;grid-template-columns:56px 1fr auto;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border-s);}
+.sched-row:last-child{border-bottom:none;}
+.sched-time{font-size:13px;font-weight:700;color:var(--ink);font-variant-numeric:tabular-nums;}
+.sched-row-active{border-left:3px solid var(--brand);padding-left:13px;margin:0 -16px;padding-right:16px;}
+
+/* ═══════════════════ NORICARE ═══════════════════ */
+.nc-stage{background:var(--navy);border-radius:var(--r);padding:36px 28px;display:flex;gap:28px;justify-content:center;margin-bottom:20px;position:relative;overflow:hidden;}
+.nc-stage::before{content:"";position:absolute;inset:0;background:radial-gradient(circle at 20% 50%,rgba(0,89,255,.08),transparent 55%);pointer-events:none;}
+.phone{width:300px;height:610px;border-radius:40px;background:#111;box-shadow:0 20px 50px rgba(0,0,0,.45),inset 0 0 0 1px rgba(255,255,255,.08);position:relative;overflow:hidden;flex-shrink:0;}
+.phone-notch{position:absolute;top:12px;left:50%;transform:translateX(-50%);width:96px;height:26px;background:#111;border-radius:0 0 14px 14px;z-index:10;}
+.phone-scr{position:absolute;inset:0;background:var(--bg-alt);border-radius:39px;overflow:hidden;}
+.ph-scroll{height:100%;overflow-y:auto;padding:14px 14px 80px;}
+.ph-scroll::-webkit-scrollbar{display:none;}
+.phone-lbl{font-size:11px;font-weight:600;color:rgba(255,255,255,.4);text-align:center;}
+.phone-lbl b{color:rgba(255,255,255,.7);}
+
+/* NC UI */
+.nc-topbar{height:44px;padding:0 16px;display:flex;align-items:center;justify-content:space-between;margin-top:26px;margin-bottom:0;}
+.nc-card{background:white;border:1px solid var(--border-s);border-radius:16px;padding:14px;}
+.nc-card-brand{background:var(--brand);border-radius:16px;padding:16px;color:white;}
+.nc-tint{background:var(--tint);border:1px solid transparent;border-radius:16px;padding:14px;}
+.nc-tbl td,.nc-tbl th{padding:9px 12px;font-size:12px;}
+
+/* Ring */
+.ring-wrap{display:inline-flex;flex-direction:column;align-items:center;gap:5px;}
+
+/* TABBAR */
+.tabbar{position:absolute;bottom:0;left:0;right:0;height:64px;background:rgba(255,255,255,.9);backdrop-filter:blur(10px);border-top:1px solid var(--border-s);display:flex;justify-content:space-around;align-items:center;padding-bottom:6px;}
+.tb-it{display:flex;flex-direction:column;align-items:center;gap:3px;font-size:10px;font-weight:600;color:var(--faint);}
+.tb-it.on{color:var(--brand);}
+
+/* ═══════════════════ REPORT ═══════════════════ */
+.rpt-meta{display:flex;align-items:baseline;gap:8px;margin-bottom:20px;}
+.rpt-title{font-size:24px;font-weight:900;color:var(--ink);letter-spacing:-0.03em;}
+.rpt-period{font-size:13px;color:var(--muted);}
+.delta-pos{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:800;color:var(--brand);background:var(--tint2);padding:1px 7px;border-radius:4px;}
+.delta-neg{display:inline-flex;align-items:center;gap:2px;font-size:11px;font-weight:800;color:#065F46;background:#DCFCE7;padding:1px 7px;border-radius:4px;}
+
+/* timeline */
+.tl{display:grid;grid-template-columns:repeat(4,1fr);position:relative;gap:0;}
+.tl::before{content:"";position:absolute;top:12px;left:12%;width:76%;height:2px;background:var(--border-s);}
+.tl-step{display:flex;flex-direction:column;align-items:center;gap:8px;position:relative;z-index:1;}
+.tl-dot{width:26px;height:26px;border-radius:50%;border:2px solid var(--border);background:white;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--faint);}
+.tl-step.done .tl-dot{border-color:var(--brand);background:var(--brand);color:white;}
+.tl-step.cur .tl-dot{border-color:var(--brand);background:var(--brand);color:white;box-shadow:0 0 0 5px rgba(0,89,255,.12);}
+.tl-lbl{font-size:11px;color:var(--muted);text-align:center;line-height:1.4;}
+
+/* roadmap rows */
+.rm-row{display:flex;align-items:flex-start;gap:14px;padding:14px 0;border-bottom:1px solid var(--border-s);}
+.rm-row:last-child{border-bottom:none;}
+.rm-yr{font-size:11px;font-weight:800;color:var(--brand);width:40px;flex-shrink:0;padding-top:1px;}
+.rm-t{font-size:13px;font-weight:700;color:var(--ink);margin-bottom:3px;}
+.rm-d{font-size:12px;color:var(--muted);line-height:1.6;}
+
+/* CALC */
+.calc-grid{display:grid;grid-template-columns:340px 1fr;gap:0;}
+
+/* RESPONSIVE */
+@media(max-width:960px){
+  .g2,.g3,.g4{grid-template-columns:1fr;}
+  .home-header{flex-direction:column;gap:20px;}
+  .home-header-r{width:100%;}
+  .loop{grid-template-columns:repeat(2,1fr);}
+  .loop-arr{display:none;}
+  .kpi-strip{grid-template-columns:repeat(2,1fr);}
+  .kpi-item:nth-child(2){border-right:none;}
+  .nav-tabs{overflow-x:auto;-webkit-overflow-scrolling:touch;}
+  .nav{padding:0 12px;}
+  .nav-end{display:none;}
+  .wrap{padding:16px;}
+  .nc-stage{flex-wrap:wrap;}
+  .calc-grid{grid-template-columns:1fr;}
+  .cf-sb{display:none;}
+}
+</style>
+</head>
+<body>
+
+<nav class="nav">
+  <div class="nav-logo">
+    <span class="nav-ib">InBody</span>
+    <span class="nav-x">×</span>
+    <span class="nav-ll">리브라이블리</span>
+  </div>
+  <div class="nav-tabs">
+    <div class="ntab on" data-v="home">파트너십 개요</div>
+    <div class="ntab" data-v="cf">CareFlow OS</div>
+    <div class="ntab" data-v="nc">NoriCare</div>
+    <div class="ntab" data-v="rpt">성과 리포트</div>
+    <div class="ntab" data-v="ask">협업 제안</div>
+  </div>
+  <div class="nav-end">
+    <div class="nav-tag"><span class="live-dot"></span>DEMO</div>
+    <div class="nav-tag">PoC D-38</div>
+  </div>
+</nav>
+
+<div style="background:#FFFBEB;border-bottom:1px solid #FDE68A;padding:7px 24px;font-size:11.5px;color:#78350F;display:flex;align-items:center;gap:7px;">
+  <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="flex-shrink:0;"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+  본 화면은 InBodyLIKE 협업 시나리오를 미리 보여주는 <b>시뮬레이션 데모</b>입니다. PoC 성과 수치는 예시 데이터이며, 트랙션(8개구·830건·민원 0 등)은 자사 운영 실적 기준입니다.
+</div>
+
+<!-- ══════════ HOME ══════════ -->
+<div class="view on" id="v-home">
+<div class="wrap">
+
+  <div class="home-header mb20">
+    <div class="home-header-l">
+      <div class="home-eyebrow">InBody × 리브라이블리 파트너십</div>
+      <h1 class="home-title">정밀 측정을<br>실제 건강성과로 연결합니다</h1>
+      <p class="home-desc mb16">InBody의 임상 신뢰도 높은 체성분 데이터를 리브라이블리의 방문운동 운영체계와 연결해, 측정→개입→재측정의 완결된 루프를 고령자 생활현장에서 실증합니다.</p>
+      <div style="display:flex;gap:8px;">
+        <button class="btn btn-primary btn-sm" onclick="go('cf')">CareFlow OS 보기</button>
+        <button class="btn btn-ghost btn-sm" onclick="go('rpt')">성과 리포트</button>
+      </div>
+    </div>
+    <div class="home-header-r">
+      <div style="font-size:10px;font-weight:700;color:rgba(255,255,255,.4);letter-spacing:.06em;margin-bottom:14px;">2026 PoC 현황</div>
+      <div class="home-stat-row"><span class="home-stat-k">수행 자치구</span><span class="home-stat-v">서울시 8개구</span></div>
+      <div class="home-stat-row"><span class="home-stat-k">참여 대상자</span><span class="home-stat-v">248명 (목표 300)</span></div>
+      <div class="home-stat-row"><span class="home-stat-k">방문운동 완수</span><span class="home-stat-v">830건 · 민원 0</span></div>
+      <div class="home-stat-row"><span class="home-stat-k">코치 네트워크</span><span class="home-stat-v">300명+ (즉시 투입)</span></div>
+      <div class="home-stat-row"><span class="home-stat-k">PoC 시작</span><span class="home-stat-v">2026.07.20</span></div>
+    </div>
+  </div>
+
+  <!-- 5-step loop -->
+  <div class="loop mb20">
+    <div class="loop-step">
+      <div class="loop-arr">
+        <svg width="7" height="7" viewBox="0 0 8 8"><path d="M1 4h6M4 1l3 3-3 3" stroke="#CBD5E1" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <div class="loop-n">STEP 01</div>
+      <div class="loop-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+      </div>
+      <div class="loop-t">InBody 측정</div>
+      <div class="loop-d">체성분·골격근량·체지방 Baseline 확보</div>
+    </div>
+    <div class="loop-step">
+      <div class="loop-arr">
+        <svg width="7" height="7" viewBox="0 0 8 8"><path d="M1 4h6M4 1l3 3-3 3" stroke="#CBD5E1" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <div class="loop-n">STEP 02</div>
+      <div class="loop-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><path d="M9 12l2 2 4-4"/></svg>
+      </div>
+      <div class="loop-t">AI 위험도 분류</div>
+      <div class="loop-d">근감소·낙상 위험군 자동 분류 및 등록</div>
+    </div>
+    <div class="loop-step">
+      <div class="loop-arr">
+        <svg width="7" height="7" viewBox="0 0 8 8"><path d="M1 4h6M4 1l3 3-3 3" stroke="#CBD5E1" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <div class="loop-n">STEP 03</div>
+      <div class="loop-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.75" stroke-linecap="round"><circle cx="12" cy="7" r="3"/><path d="M5 21v-1a7 7 0 0114 0v1"/><path d="M19 12l2 2-2 2"/></svg>
+      </div>
+      <div class="loop-t">방문운동 개입</div>
+      <div class="loop-d">개인별 프로그램 코치 방문 8~10회</div>
+    </div>
+    <div class="loop-step">
+      <div class="loop-arr">
+        <svg width="7" height="7" viewBox="0 0 8 8"><path d="M1 4h6M4 1l3 3-3 3" stroke="#CBD5E1" stroke-width="1.5" fill="none" stroke-linecap="round"/></svg>
+      </div>
+      <div class="loop-n">STEP 04</div>
+      <div class="loop-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.75" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+      </div>
+      <div class="loop-t">생활습관 코칭</div>
+      <div class="loop-d">영양·활동·일상 행동변화 지속 지원</div>
+    </div>
+    <div class="loop-step">
+      <div class="loop-n">STEP 05</div>
+      <div class="loop-icon">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,.8)" stroke-width="1.75" stroke-linecap="round"><path d="M4 4v5h5"/><path d="M20 20v-5h-5"/><path d="M20 9A9 9 0 005.3 5.3M4 15a9 9 0 0014.7 3.7"/></svg>
+      </div>
+      <div class="loop-t">재측정 · 리포트</div>
+      <div class="loop-d">InBody 재측정 후 개인·기관 성과보고서 발행</div>
+    </div>
+  </div>
+
+  <!-- Role split + metrics -->
+  <div class="g2">
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="role-card">
+        <div class="role-hd role-ib-hd">InBody 제공</div>
+        <div class="role-body">
+          <div class="role-item"><div class="role-dot" style="background:#1D4ED8;"></div>정밀 체성분 측정 기기 및 임상 데이터</div>
+          <div class="role-item"><div class="role-dot" style="background:#1D4ED8;"></div>InBody 리포트 및 브랜드 신뢰</div>
+          <div class="role-item"><div class="role-dot" style="background:#1D4ED8;"></div>병원·기관·글로벌 유통 네트워크</div>
+          <div class="role-item"><div class="role-dot" style="background:#1D4ED8;"></div>재측정 기기 현장 배치</div>
+        </div>
+      </div>
+      <div class="role-card">
+        <div class="role-hd role-ll-hd">리브라이블리 제공</div>
+        <div class="role-body">
+          <div class="role-item"><div class="role-dot" style="background:#065F46;"></div>고령자 방문운동 현장 운영망</div>
+          <div class="role-item"><div class="role-dot" style="background:#065F46;"></div>CareFlow OS 운영·성과관리 플랫폼</div>
+          <div class="role-item"><div class="role-dot" style="background:#065F46;"></div>통합돌봄 B2G 수행 경험 (8개구)</div>
+          <div class="role-item"><div class="role-dot" style="background:#065F46;"></div>재측정·결과보고 운영 체계</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-hd">관리 핵심지표 (6개)</div>
+      <div style="padding:0;">
+        <table class="tbl">
+          <tbody>
+            <tr><td style="font-weight:700;">골격근량 SMI</td><td style="color:var(--muted);">kg/m² · InBody 직접 산출</td><td><span class="badge badge-blue">근감소 판정 기준</span></td></tr>
+            <tr><td style="font-weight:700;">악력</td><td style="color:var(--muted);">kg · 근감소 진단 보조</td><td><span class="badge badge-blue">낙상 위험 연관</span></td></tr>
+            <tr><td style="font-weight:700;">SPPB 점수</td><td style="color:var(--muted);">0~12점 · 기능 수준</td><td><span class="badge badge-blue">보행+균형+기립</span></td></tr>
+            <tr><td style="font-weight:700;">보행속도</td><td style="color:var(--muted);">m/s · SPPB 하위 항목</td><td><span class="badge badge-blue">0.8m/s 임계치</span></td></tr>
+            <tr><td style="font-weight:700;">체지방률</td><td style="color:var(--muted);">% · InBody 직접 산출</td><td><span class="badge badge-blue">대사 위험 연관</span></td></tr>
+            <tr><td style="font-weight:700;">낙상 위험도</td><td style="color:var(--muted);">복합 점수</td><td><span class="badge badge-gray">의료 진단 아님</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div style="padding:14px 16px;background:#FFFBEB;border-top:1px solid #FDE68A;font-size:11px;color:#78350F;line-height:1.6;border-radius:0 0 var(--r) var(--r);">
+        본 솔루션은 의료적 진단·치료가 아닌 위험군 분류·예방관리·운동개입·성과관리를 수행합니다.
+      </div>
+    </div>
+  </div>
+
+  <!-- InBody gains -->
+  <div style="margin-top:20px;">
+    <div style="display:flex;align-items:baseline;gap:10px;margin-bottom:12px;">
+      <div class="sec-title">이 협업으로 InBody가 얻는 것</div>
+      <div style="font-size:12px;color:var(--muted);">측정 데이터가 반복 서비스가 되는 순간, 기기의 가치도 반복됩니다</div>
+    </div>
+    <div class="g4">
+      <div class="card card-p">
+        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">① 데이터 플라이휠</div>
+        <div style="font-size:13px;line-height:1.65;color:var(--body);">1회 측정이 12주마다 재측정으로 반복. 고령자 종단 데이터가 InBody 데이터 자산으로 축적.</div>
+      </div>
+      <div class="card card-p">
+        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">② 기기 · 측정 수요</div>
+        <div style="font-size:13px;line-height:1.65;color:var(--body);">자치구·복지관·데이케어 거점마다 측정 수요 창출. PoC가 곧 신규 채널 실증.</div>
+      </div>
+      <div class="card card-p">
+        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">③ B2G 시장 진입</div>
+        <div style="font-size:13px;line-height:1.65;color:var(--body);">2026 통합돌봄 본사업의 공공 조달·결과보고 체계를 갖춘 파트너를 통한 즉시 진입.</div>
+      </div>
+      <div class="card card-p" style="background:var(--tint);border-color:transparent;">
+        <div style="font-size:12px;font-weight:800;color:var(--brand);margin-bottom:8px;">④ 대표 성공 사례</div>
+        <div style="font-size:13px;line-height:1.65;color:var(--body);">"측정이 성과가 된" InBodyLIKE 1기 쇼케이스. 4개월 내 결과보고서로 완결.</div>
+      </div>
+    </div>
+    <div style="margin-top:16px;background:var(--navy);border-radius:var(--r);padding:22px 26px;display:flex;align-items:center;gap:20px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:260px;">
+        <div style="font-size:16px;font-weight:800;color:white;letter-spacing:-0.02em;">육성기간 4개월 안에, 숫자로 증명되는 공동 PoC</div>
+        <div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;">100~300명 · 12주 · 핵심지표 6개 · 공동 결과보고서</div>
+      </div>
+      <button class="btn btn-primary" onclick="go('ask')">협업 제안 보기 →</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<!-- ══════════ CAREFLOW OS ══════════ -->
+<div class="view" id="v-cf">
+<div class="wrap">
+
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:18px;">
+    <div>
+      <h2 class="pg-title">CareFlow OS</h2>
+      <p class="pg-sub">통합돌봄 운영 대시보드 · 실시간 관리 현황</p>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm">결과보고서 내보내기</button>
+      <button class="btn btn-primary btn-sm">+ 신규 참여자</button>
+    </div>
+  </div>
+
+  <div class="cf-shell">
+    <!-- Chrome bar -->
+    <div class="chrome-bar">
+      <div class="cdots">
+        <div class="cdot" style="background:#FF5F57;"></div>
+        <div class="cdot" style="background:#FEBC2E;"></div>
+        <div class="cdot" style="background:#28C840;"></div>
+      </div>
+      <div style="display:flex;gap:0;flex:1;padding:0 8px;">
+        <div style="background:#3c3d3f;border-radius:6px 6px 0 0;padding:6px 14px;font-size:11px;color:#e8eaed;display:flex;align-items:center;gap:5px;font-family:system-ui;">
+          <div style="width:10px;height:10px;border-radius:50%;background:#5f6368;"></div>
+          CareFlow OS · 동대문구
+        </div>
+      </div>
+    </div>
+    <!-- Chrome URL bar -->
+    <div style="background:#35363a;height:36px;display:flex;align-items:center;padding:0 10px;gap:7px;border-bottom:1px solid rgba(0,0,0,.28);">
+      <div style="display:flex;gap:4px;">
+        <div style="width:22px;height:22px;background:rgba(255,255,255,.07);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M6.5 2L3.5 5l3 3" stroke="#9aa0a6" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div style="width:22px;height:22px;background:rgba(255,255,255,.07);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;opacity:.45;">
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M3.5 2L6.5 5l-3 3" stroke="#9aa0a6" stroke-width="1.5" stroke-linecap="round"/></svg>
+        </div>
+        <div style="width:22px;height:22px;background:rgba(255,255,255,.07);border-radius:4px;display:flex;align-items:center;justify-content:center;cursor:pointer;">
+          <svg width="9" height="9" viewBox="0 0 10 10" fill="none"><path d="M5 1v5m0-5L3 3m2-2L7 3M2 9h6" stroke="#9aa0a6" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/></svg>
+        </div>
+      </div>
+      <div style="flex:1;max-width:380px;height:26px;background:#292a2d;border-radius:13px;display:flex;align-items:center;padding:0 10px;gap:6px;font-size:11px;font-family:system-ui,sans-serif;">
+        <svg width="10" height="10" viewBox="0 0 16 16" fill="none"><rect x="2" y="6" width="12" height="9" rx="1.5" stroke="#5f6368" stroke-width="1.3"/><path d="M5 6V4.5a3 3 0 016 0V6" stroke="#5f6368" stroke-width="1.3"/></svg>
+        <span style="color:#5f6368;">careflow.livelively.kr</span><span style="color:#bdc1c6;">/dashboard</span>
+      </div>
+      <div style="margin-left:auto;display:flex;gap:4px;">
+        <div style="width:22px;height:22px;background:rgba(255,255,255,.07);border-radius:4px;"></div>
+        <div style="width:22px;height:22px;background:rgba(255,255,255,.07);border-radius:4px;"></div>
+        <div style="width:22px;height:22px;background:rgba(255,255,255,.07);border-radius:4px;"></div>
+      </div>
+    </div>
+    <div class="cf-body">
+      <!-- Sidebar -->
+      <div class="cf-sb">
+        <div class="cf-sb-logo">
+          <div class="cf-mark">리</div>
+          <div class="cf-mark-txt">CareFlow OS</div>
+        </div>
+        <button class="cf-nav-item on">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
+          대시보드
+        </button>
+        <button class="cf-nav-item" onclick="go('nc')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="9" cy="7" r="3"/><path d="M2 21c.9-3.5 3.3-5 7-5s6 1.5 7 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 13.5c2 .2 4.2 1.4 5 4"/></svg>
+          참여자
+          <span class="cf-nb">248</span>
+        </button>
+        <button class="cf-nav-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h2M8 10h2M8 14h2M14 6h2M14 10h2"/></svg>
+          기관
+        </button>
+        <button class="cf-nav-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
+          방문 일정
+          <span class="cf-nb">14</span>
+        </button>
+        <button class="cf-nav-item" onclick="go('rpt')">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
+          리포트
+        </button>
+        <button class="cf-nav-item">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
+          정산
+        </button>
+        <div class="cf-sb-foot">
+          <div style="display:flex;align-items:center;gap:8px;">
+            <div class="cf-av">JC</div>
+            <div>
+              <div style="font-size:12px;font-weight:700;color:var(--ink);">지창대 대표</div>
+              <div style="font-size:11px;color:var(--faint);">8개구 통합돌봄</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Main -->
+      <div class="cf-main">
+        <div class="cf-top">
+          <div>
+            <div style="font-size:10px;color:var(--faint);font-weight:700;letter-spacing:.04em;">동대문구 · 통합돌봄</div>
+            <div style="font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-0.02em;">대시보드</div>
+          </div>
+          <div class="cf-search" style="margin-left:20px;">
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M16 16l5 5"/></svg>
+            참여자·코치·기관 검색
+            <span style="margin-left:auto;font-size:10px;border:1px solid var(--border);border-radius:4px;padding:1px 5px;color:var(--faint);">⌘K</span>
+          </div>
+          <div style="margin-left:auto;display:flex;align-items:center;gap:10px;">
+            <div style="position:relative;">
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round"><path d="M6 16v-5a6 6 0 1112 0v5l1.5 2H4.5L6 16z"/><path d="M10 21h4"/></svg>
+              <span style="position:absolute;top:-1px;right:-2px;width:6px;height:6px;background:var(--brand);border-radius:50%;border:1.5px solid white;"></span>
+            </div>
+            <button class="btn btn-primary btn-sm">+ 참여자 등록</button>
+            <div class="cf-av" style="cursor:pointer;">JC</div>
+          </div>
+        </div>
+
+        <div class="cf-content">
+          <!-- KPI strip -->
+          <div class="kpi-strip">
+            <div class="kpi-item">
+              <div class="kpi-lbl">누적 참여자</div>
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;">
+                <div class="kpi-val" id="k1">248</div>
+                <svg class="spk" width="52" height="28" viewBox="0 0 52 28" style="margin-bottom:6px;flex-shrink:0;">
+                  <polyline points="0,22 9,19 18,16 27,13 36,9 45,6 52,4" fill="none" stroke="#C8D8FF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="52" cy="4" r="2.5" fill="#0059FF"/>
+                </svg>
+              </div>
+              <div class="kpi-sub">8개 자치구 <span class="kpi-delta">▲ +12 이번달</span></div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-lbl">이번 주 방문</div>
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;">
+                <div class="kpi-val" id="k2" style="color:var(--warn);">96</div>
+                <svg class="spk" width="52" height="28" viewBox="0 0 52 28" style="margin-bottom:6px;flex-shrink:0;">
+                  <polyline points="0,18 9,20 18,14 27,16 36,10 45,12 52,8" fill="none" stroke="#FDE68A" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="52" cy="8" r="2.5" fill="#D97706"/>
+                </svg>
+              </div>
+              <div class="kpi-sub">완료 78 · 예정 18</div>
+            </div>
+            <div class="kpi-item">
+              <div class="kpi-lbl">활동 코치</div>
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;">
+                <div class="kpi-val" id="k3" style="color:#059669;">24</div>
+                <svg class="spk" width="52" height="28" viewBox="0 0 52 28" style="margin-bottom:6px;flex-shrink:0;">
+                  <polyline points="0,24 9,22 18,20 27,18 36,15 45,14 52,12" fill="none" stroke="#BBF7D0" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="52" cy="12" r="2.5" fill="#059669"/>
+                </svg>
+              </div>
+              <div class="kpi-sub">전체 풀 300+ 명</div>
+            </div>
+            <div class="kpi-item" style="border-left:3px solid var(--brand);">
+              <div class="kpi-lbl" style="color:var(--brand);">InBody 재측정 완료율</div>
+              <div style="display:flex;align-items:flex-end;justify-content:space-between;gap:8px;">
+                <div class="kpi-val" style="color:var(--brand);">92<span style="font-size:16px;">%</span></div>
+                <svg class="spk" width="52" height="28" viewBox="0 0 52 28" style="margin-bottom:6px;flex-shrink:0;">
+                  <polyline points="0,24 9,20 18,16 27,12 36,9 45,6 52,5" fill="none" stroke="#A8BEFF" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"/>
+                  <circle cx="52" cy="5" r="2.5" fill="#0059FF"/>
+                </svg>
+              </div>
+              <div class="kpi-sub"><span class="kpi-delta">목표 90% 초과</span></div>
+            </div>
+          </div>
+
+          <div class="g2">
+            <!-- Today schedule -->
+            <div class="card">
+              <div class="card-hd">
+                <span style="font-size:14px;font-weight:800;color:var(--ink);text-transform:none;letter-spacing:-0.01em;">오늘 방문 · 14건</span>
+                <button class="btn btn-ghost btn-sm" style="margin-left:auto;">전체 일정 →</button>
+              </div>
+              <div style="padding:0 16px;">
+                <div class="sched-row">
+                  <div class="sched-time">09:00</div>
+                  <div><div style="font-size:13px;font-weight:700;">김순자 <span style="font-weight:400;color:var(--muted);">75세 여</span></div><div style="font-size:11px;color:var(--faint);">제기동 · 이지연 코치</div></div>
+                  <span class="badge badge-green">완료</span>
+                </div>
+                <div class="sched-row">
+                  <div class="sched-time">11:00</div>
+                  <div><div style="font-size:13px;font-weight:700;">문석순 <span style="font-weight:400;color:var(--muted);">81세 여</span></div><div style="font-size:11px;color:var(--faint);">청량리동 · 박민준 코치</div></div>
+                  <span class="badge badge-green">완료</span>
+                </div>
+                <div class="sched-row sched-row-active">
+                  <div class="sched-time" style="color:var(--brand);">14:00</div>
+                  <div><div style="font-size:13px;font-weight:700;color:var(--brand);">박용수 <span style="font-weight:400;color:var(--muted);">78세 남</span></div><div style="font-size:11px;color:var(--faint);">회기동 · 최수진 코치</div></div>
+                  <span class="badge badge-blue-solid badge-live">진행중</span>
+                </div>
+                <div class="sched-row">
+                  <div class="sched-time">16:00</div>
+                  <div><div style="font-size:13px;font-weight:700;">이복순 <span style="font-weight:400;color:var(--muted);">72세 여</span></div><div style="font-size:11px;color:var(--faint);">용두동 · 이지연 코치</div></div>
+                  <span class="badge badge-gray">대기</span>
+                </div>
+                <div class="sched-row">
+                  <div class="sched-time">18:00</div>
+                  <div><div style="font-size:13px;font-weight:700;">최명수 <span style="font-weight:400;color:var(--muted);">80세 남</span></div><div style="font-size:11px;color:var(--faint);">전농동 · 박민준 코치</div></div>
+                  <span class="badge badge-gray">대기</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- Chart -->
+            <div class="card card-p">
+              <div class="label mb8">8주 프로그램 평균 기능개선율</div>
+              <div style="font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-0.02em;margin-bottom:14px;">n = 248 · 전체 참여자</div>
+              <canvas id="perf-chart" height="200"></canvas>
+            </div>
+          </div>
+
+          <!-- Risk distribution mini bar -->
+          <div class="card" style="margin-top:20px;padding:14px 20px;">
+            <div style="display:flex;align-items:center;gap:16px;">
+              <div style="font-size:12px;font-weight:700;color:var(--muted);white-space:nowrap;">위험도 분포 · 248명</div>
+              <div style="flex:1;display:flex;gap:2px;height:8px;border-radius:4px;overflow:hidden;">
+                <div style="width:27.8%;background:var(--danger);opacity:.75;" title="고위험 69명"></div>
+                <div style="width:41.1%;background:var(--warn);opacity:.75;" title="중위험 102명"></div>
+                <div style="width:31.1%;background:var(--brand);opacity:.5;" title="관찰군 77명"></div>
+              </div>
+              <div style="display:flex;gap:12px;flex-shrink:0;">
+                <div style="display:flex;align-items:center;gap:4px;font-size:11px;"><div style="width:8px;height:8px;border-radius:2px;background:var(--danger);opacity:.75;"></div><span style="color:var(--muted);">고위험</span><strong style="color:var(--ink);">69</strong></div>
+                <div style="display:flex;align-items:center;gap:4px;font-size:11px;"><div style="width:8px;height:8px;border-radius:2px;background:var(--warn);opacity:.75;"></div><span style="color:var(--muted);">중위험</span><strong style="color:var(--ink);">102</strong></div>
+                <div style="display:flex;align-items:center;gap:4px;font-size:11px;"><div style="width:8px;height:8px;border-radius:2px;background:var(--brand);opacity:.5;"></div><span style="color:var(--muted);">관찰</span><strong style="color:var(--ink);">77</strong></div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Participants table -->
+          <div class="card" style="margin-top:8px;">
+            <div class="card-hd">
+              <span style="font-size:14px;font-weight:800;color:var(--ink);text-transform:none;letter-spacing:-0.01em;">참여자 목록</span>
+              <div class="chip-row" id="risk-tabs">
+                <button class="chip-tab on" onclick="filterC('all',this)">전체 248</button>
+                <button class="chip-tab" onclick="filterC('high',this)">고위험 69</button>
+                <button class="chip-tab" onclick="filterC('mid',this)">중위험 102</button>
+                <button class="chip-tab" onclick="filterC('watch',this)">관찰 77</button>
+              </div>
+              <button class="btn btn-ghost btn-sm" style="margin-left:auto;">내보내기</button>
+            </div>
+            <table class="tbl">
+              <thead>
+                <tr><th>이름</th><th>나이·성별</th><th>위험도</th><th>SMI (골격근량)</th><th>SPPB</th><th>담당 코치</th><th>최근 방문</th></tr>
+              </thead>
+              <tbody id="ctbody"></tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ NORICARE ══════════ -->
+<div class="view" id="v-nc">
+<div class="wrap">
+  <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
+    <button class="btn btn-ghost btn-sm" onclick="go('cf')">← CareFlow OS</button>
+    <div>
+      <h2 class="pg-title" id="nc-name">김순자</h2>
+      <p class="pg-sub" id="nc-meta">75세 · 여 · 동대문구 · <span class="rp rp-h">고위험</span></p>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm">보호자 리포트</button>
+      <button class="btn btn-primary btn-sm">다음 방문 예약</button>
+    </div>
+  </div>
+
+  <!-- 3 phones -->
+  <div class="nc-stage">
+    <!-- Phone 1: Home -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-scr">
+          <div class="ph-scroll">
+            <div class="nc-topbar">
+              <span style="font-size:13px;font-weight:800;color:var(--ink);">노리케어</span>
+              <div class="cf-av" style="width:30px;height:30px;font-size:11px;">김</div>
+            </div>
+            <div style="padding:4px 0 12px;">
+              <div style="font-size:12px;color:var(--muted);">2026년 6월 12일 · 금</div>
+              <div style="font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-0.025em;line-height:1.2;margin-top:4px;">안녕하세요,<br><span style="color:var(--brand);">김순자 회원님</span></div>
+            </div>
+            <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
+              <div class="nc-card">
+                <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:4px;">출석</div>
+                <div style="font-size:22px;font-weight:800;color:var(--brand);letter-spacing:-0.04em;">6<span style="font-size:12px;font-weight:600;color:var(--muted);">회째</span></div>
+              </div>
+              <div class="nc-card">
+                <div style="font-size:11px;color:var(--muted);font-weight:600;margin-bottom:4px;">오늘 방문</div>
+                <div style="font-size:14px;font-weight:800;color:var(--ink);">14:00</div>
+                <div style="font-size:10px;color:var(--faint);">이지연 코치</div>
+              </div>
+            </div>
+            <div class="nc-card-brand" style="margin-bottom:10px;">
+              <div style="font-size:10px;opacity:.6;letter-spacing:.04em;margin-bottom:6px;">NORICARE FLOW</div>
+              <div style="font-size:16px;font-weight:800;line-height:1.3;margin-bottom:10px;">이지연 코치의<br>하체 단련 플로우</div>
+              <div style="display:flex;justify-content:space-between;align-items:center;font-size:12px;border-top:1px solid rgba(255,255,255,.15);padding-top:10px;">
+                <span style="opacity:.7;">20분 · 7회차</span>
+                <span style="font-weight:700;">시작하기 →</span>
+              </div>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">최근 신체기능</div>
+            <div class="nc-card">
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:0;text-align:center;">
+                <div style="padding:8px 4px;border-right:1px solid var(--border-s);">
+                  <svg viewBox="0 0 64 64" width="48" height="48">
+                    <circle cx="32" cy="32" r="24" stroke="var(--border-s)" stroke-width="6" fill="none"/>
+                    <circle cx="32" cy="32" r="24" stroke="var(--brand)" stroke-width="6" fill="none" stroke-dasharray="90 151" stroke-dashoffset="38" stroke-linecap="round"/>
+                    <text x="32" y="37" text-anchor="middle" font-size="16" font-weight="800" fill="var(--brand)" font-family="Pretendard,sans-serif">3</text>
+                  </svg>
+                  <div style="font-size:10px;font-weight:700;color:var(--ink);">균형</div>
+                </div>
+                <div style="padding:8px 4px;border-right:1px solid var(--border-s);">
+                  <svg viewBox="0 0 64 64" width="48" height="48">
+                    <circle cx="32" cy="32" r="24" stroke="var(--border-s)" stroke-width="6" fill="none"/>
+                    <circle cx="32" cy="32" r="24" stroke="var(--brand)" stroke-width="6" fill="none" stroke-dasharray="90 151" stroke-dashoffset="38" stroke-linecap="round"/>
+                    <text x="32" y="37" text-anchor="middle" font-size="16" font-weight="800" fill="var(--brand)" font-family="Pretendard,sans-serif">3</text>
+                  </svg>
+                  <div style="font-size:10px;font-weight:700;color:var(--ink);">보행</div>
+                </div>
+                <div style="padding:8px 4px;">
+                  <svg viewBox="0 0 64 64" width="48" height="48">
+                    <circle cx="32" cy="32" r="24" stroke="var(--border-s)" stroke-width="6" fill="none"/>
+                    <circle cx="32" cy="32" r="24" stroke="var(--brand)" stroke-width="6" fill="none" stroke-dasharray="120 151" stroke-dashoffset="38" stroke-linecap="round"/>
+                    <text x="32" y="37" text-anchor="middle" font-size="16" font-weight="800" fill="var(--brand)" font-family="Pretendard,sans-serif">4</text>
+                  </svg>
+                  <div style="font-size:10px;font-weight:700;color:var(--ink);">하지<span style="color:var(--brand);"> ▲</span></div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <div class="tb-it on"><svg width="16" height="16" viewBox="0 0 24 24" fill="var(--brand)" stroke="var(--brand)" stroke-width="1.5"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>홈</div>
+            <div class="tb-it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>검사</div>
+            <div class="tb-it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4V8z"/></svg>프로그램</div>
+            <div class="tb-it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>코칭</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-lbl">01 · 홈</div>
+    </div>
+
+    <!-- Phone 2: Test result -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-scr">
+          <div class="ph-scroll">
+            <div class="nc-topbar">
+              <span style="font-size:13px;font-weight:800;color:var(--ink);">신체기능 리포트</span>
+              <span style="font-size:11px;color:var(--faint);">2026.05.28</span>
+            </div>
+            <div style="font-size:10px;color:var(--brand);font-weight:700;letter-spacing:.04em;margin-bottom:6px;">InBody 측정 연동</div>
+            <div class="nc-card" style="margin-bottom:10px;padding:16px;display:flex;align-items:center;gap:14px;">
+              <div style="flex:1;">
+                <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">종합 점수</div>
+                <div style="font-size:36px;font-weight:800;color:var(--brand);letter-spacing:-0.04em;line-height:1;">3.3<span style="font-size:16px;color:var(--faint);font-weight:600;">/4</span></div>
+                <span class="badge badge-blue" style="margin-top:5px;font-size:10px;">+1.5 4주 전 대비</span>
+              </div>
+              <svg viewBox="0 0 80 80" width="72" height="72">
+                <circle cx="40" cy="40" r="32" stroke="var(--border-s)" stroke-width="7" fill="none"/>
+                <circle cx="40" cy="40" r="32" stroke="var(--brand)" stroke-width="7" fill="none" stroke-dasharray="166 201" stroke-dashoffset="50" stroke-linecap="round"/>
+                <text x="40" y="45" text-anchor="middle" font-size="14" font-weight="800" fill="var(--brand)" font-family="Pretendard,sans-serif">82%</text>
+              </svg>
+            </div>
+            <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">항목별</div>
+            <div style="display:flex;flex-direction:column;gap:6px;">
+              <div class="nc-card" style="display:flex;align-items:center;gap:10px;">
+                <div style="flex:1;font-size:13px;font-weight:700;">균형감각</div>
+                <div style="font-size:20px;font-weight:800;color:var(--brand);">3<span style="font-size:11px;color:var(--faint);">/4</span></div>
+                <span class="badge badge-gray" style="font-size:10px;">유지</span>
+              </div>
+              <div class="nc-card" style="display:flex;align-items:center;gap:10px;">
+                <div style="flex:1;font-size:13px;font-weight:700;">보행속도</div>
+                <div style="font-size:20px;font-weight:800;color:var(--brand);">3<span style="font-size:11px;color:var(--faint);">/4</span></div>
+                <span class="badge badge-gray" style="font-size:10px;">유지</span>
+              </div>
+              <div class="nc-tint" style="display:flex;align-items:center;gap:10px;">
+                <div style="flex:1;font-size:13px;font-weight:700;">하지근기능</div>
+                <div style="font-size:20px;font-weight:800;color:var(--brand);">4<span style="font-size:11px;color:var(--faint);">/4</span></div>
+                <span class="badge badge-blue-solid" style="font-size:10px;">+3 ▲</span>
+              </div>
+              <div class="nc-card" style="display:flex;align-items:center;gap:10px;">
+                <div style="flex:1;font-size:13px;font-weight:700;">인지</div>
+                <div style="font-size:20px;font-weight:800;color:var(--brand);">3<span style="font-size:11px;color:var(--faint);">/4</span></div>
+                <span class="badge badge-gray" style="font-size:10px;">유지</span>
+              </div>
+            </div>
+            <div style="margin-top:10px;background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;padding:12px;">
+              <div style="font-size:11px;font-weight:700;color:var(--ink);margin-bottom:4px;">InBody 체성분</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
+                <div><div style="font-size:10px;color:var(--muted);">골격근량</div><div style="font-size:14px;font-weight:800;color:var(--ink);">21.4<span style="font-size:9px;">kg</span></div></div>
+                <div><div style="font-size:10px;color:var(--muted);">체지방률</div><div style="font-size:14px;font-weight:800;color:var(--ink);">31.2<span style="font-size:9px;">%</span></div></div>
+                <div><div style="font-size:10px;color:var(--muted);">SMI</div><div style="font-size:14px;font-weight:800;color:var(--brand);">6.1<span style="font-size:9px;">k/m²</span></div></div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <div class="tb-it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>홈</div>
+            <div class="tb-it on"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.75"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>검사</div>
+            <div class="tb-it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4V8z"/></svg>프로그램</div>
+            <div class="tb-it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>코칭</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-lbl">02 · 신체기능 리포트 · <b>InBody 연동</b></div>
+    </div>
+
+    <!-- Phone 3: Program -->
+    <div style="display:flex;flex-direction:column;align-items:center;gap:12px;">
+      <div class="phone">
+        <div class="phone-notch"></div>
+        <div class="phone-scr">
+          <div class="ph-scroll">
+            <div class="nc-topbar">
+              <span style="font-size:13px;font-weight:800;color:var(--ink);">오늘의 프로그램</span>
+              <span class="badge badge-blue-solid" style="font-size:10px;">7회차</span>
+            </div>
+            <div style="margin-bottom:12px;">
+              <div style="font-size:16px;font-weight:800;color:var(--ink);letter-spacing:-0.02em;line-height:1.3;">이지연 코치의<br>하체 단련 플로우</div>
+              <div style="font-size:11px;color:var(--muted);margin-top:4px;">45분 내외 · 진행중</div>
+            </div>
+            <div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:12px;padding:12px;margin-bottom:12px;">
+              <div style="font-size:10px;font-weight:700;color:var(--brand);letter-spacing:.03em;margin-bottom:8px;">InBody 목표치 반영</div>
+              <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:8px;text-align:center;">
+                <div><div style="font-size:9px;color:var(--muted);">골격근량</div><div style="font-size:13px;font-weight:800;">21.4<span style="font-size:9px;">kg</span></div></div>
+                <div><div style="font-size:9px;color:var(--muted);">체지방률</div><div style="font-size:13px;font-weight:800;">31.2<span style="font-size:9px;">%</span></div></div>
+                <div><div style="font-size:9px;color:var(--muted);">SMI</div><div style="font-size:13px;font-weight:800;color:var(--brand);">6.1<span style="font-size:9px;">k/m²</span></div></div>
+              </div>
+            </div>
+            <div style="display:flex;flex-direction:column;gap:8px;">
+              <div class="nc-card" style="display:flex;gap:10px;align-items:flex-start;opacity:.6;">
+                <div style="width:20px;height:20px;border-radius:50%;background:#DCFCE7;color:#15803D;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px;">✓</div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;font-weight:700;">준비 · 관절 가동</div>
+                  <div style="font-size:11px;color:var(--muted);">어깨·고관절·발목 스트레칭</div>
+                  <div class="prog" style="margin-top:6px;"><div class="prog-fill" data-w="100%" style="background:#15803D;"></div></div>
+                </div>
+                <div style="font-size:11px;font-weight:700;color:#15803D;">10분 완료</div>
+              </div>
+              <div class="nc-card" style="display:flex;gap:10px;align-items:flex-start;border-color:var(--brand);box-shadow:0 0 0 1px var(--brand);">
+                <div style="width:20px;height:20px;border-radius:50%;background:var(--tint2);color:var(--brand);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px;">2</div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;font-weight:700;color:var(--brand);">근력 · 하지 강화</div>
+                  <div style="font-size:11px;color:var(--muted);">의자 스쿼트 15회 × 3세트</div>
+                  <div class="prog" style="margin-top:6px;"><div class="prog-fill" data-w="58%" style="background:var(--brand);"></div></div>
+                </div>
+                <div style="font-size:11px;font-weight:700;color:var(--brand);">진행중</div>
+              </div>
+              <div class="nc-card" style="display:flex;gap:10px;align-items:flex-start;opacity:.38;">
+                <div style="width:20px;height:20px;border-radius:50%;background:var(--border-s);color:var(--faint);display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:800;flex-shrink:0;margin-top:1px;">3</div>
+                <div style="flex:1;">
+                  <div style="font-size:13px;font-weight:700;">균형 · 보행 훈련</div>
+                  <div style="font-size:11px;color:var(--muted);">한발 균형·지그재그 보행</div>
+                  <div class="prog" style="margin-top:6px;"><div class="prog-fill" data-w="0%" style="background:var(--brand);"></div></div>
+                </div>
+                <div style="font-size:11px;color:var(--faint);">15분 예정</div>
+              </div>
+            </div>
+          </div>
+          <div class="tabbar">
+            <div class="tb-it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/></svg>홈</div>
+            <div class="tb-it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>검사</div>
+            <div class="tb-it on"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.75"><circle cx="12" cy="12" r="9"/><path d="M10 8l6 4-6 4V8z"/></svg>프로그램</div>
+            <div class="tb-it"><svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>코칭</div>
+          </div>
+        </div>
+      </div>
+      <div class="phone-lbl">03 · 오늘의 프로그램</div>
+    </div>
+  </div>
+
+  <!-- 12-week progress + coach -->
+  <div class="g2">
+    <div class="card card-p">
+      <div class="label mb4">12주 성과 추적</div>
+      <div style="font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-0.02em;margin-bottom:4px;" id="prog-title">골격근량 SMI (kg/m²)</div>
+      <div class="chip-row" style="margin-bottom:14px;" id="prog-tabs">
+        <button class="chip-tab on" onclick="switchM('smi',this)">SMI</button>
+        <button class="chip-tab" onclick="switchM('sppb',this)">SPPB</button>
+        <button class="chip-tab" onclick="switchM('gait',this)">보행속도</button>
+        <button class="chip-tab" onclick="switchM('grip',this)">악력</button>
+      </div>
+      <canvas id="prog-chart" height="180"></canvas>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card card-p">
+        <div class="label mb12">담당 코치</div>
+        <div style="display:flex;align-items:center;gap:10px;margin-bottom:12px;">
+          <div class="cf-av">이지</div>
+          <div>
+            <div style="font-size:14px;font-weight:800;color:var(--ink);">이지연 코치</div>
+            <div style="font-size:11px;color:var(--faint);">KRIEE 2급 · 노인운동전문 · 5년 경력</div>
+          </div>
+        </div>
+        <div class="coach-quote">
+          "지난주보다 의자 일어서기 2회 향상. 균형 훈련 중 흔들림이 눈에 띄게 줄었습니다. 다음 주 SPPB 재평가 예정입니다."
+        </div>
+        <div style="font-size:11px;color:var(--faint);margin-top:8px;">06.10 방문 피드백</div>
+      </div>
+      <div class="card">
+        <div class="card-hd">12주 변화 요약</div>
+        <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:0;">
+          <div style="padding:14px 16px;border-right:1px solid var(--border-s);border-bottom:1px solid var(--border-s);">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">SMI</div>
+            <div style="font-size:22px;font-weight:800;color:var(--brand);letter-spacing:-0.04em;">+17.3%</div>
+          </div>
+          <div style="padding:14px 16px;border-bottom:1px solid var(--border-s);">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">SPPB</div>
+            <div style="font-size:22px;font-weight:800;color:var(--brand);letter-spacing:-0.04em;">8→10점</div>
+          </div>
+          <div style="padding:14px 16px;border-right:1px solid var(--border-s);">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">악력</div>
+            <div style="font-size:22px;font-weight:800;color:var(--brand);letter-spacing:-0.04em;">+27.6%</div>
+          </div>
+          <div style="padding:14px 16px;">
+            <div style="font-size:11px;color:var(--muted);margin-bottom:3px;">보행속도</div>
+            <div style="font-size:22px;font-weight:800;color:var(--brand);letter-spacing:-0.04em;">+25.6%</div>
+          </div>
+        </div>
+        <div style="padding:12px 16px;background:var(--tint);border-top:1px solid var(--border-s);font-size:12px;font-weight:700;color:var(--brand);border-radius:0 0 var(--r) var(--r);">
+          낙상위험 고위험 → 중위험 전환
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ REPORT ══════════ -->
+<div class="view" id="v-rpt">
+<div class="wrap">
+  <div style="display:flex;align-items:flex-end;gap:16px;margin-bottom:6px;">
+    <h2 class="rpt-title">InBody × 리브라이블리 공동 성과 리포트</h2>
+  </div>
+  <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
+    <div>
+      <span class="rpt-period">12주 PoC 시범운영 · 서울시 8개 자치구 · 2026 상반기 · n = 248</span>
+      <div style="font-size:11px;color:var(--faint);margin-top:3px;">리포트 생성: 2026.06.12 · InBody × 리브라이블리 공동</div>
+    </div>
+    <div style="display:flex;gap:8px;">
+      <button class="btn btn-ghost btn-sm">PDF 내보내기</button>
+      <button class="btn btn-primary btn-sm">B2G 제안 패키지</button>
+    </div>
+  </div>
+
+  <!-- Summary strip -->
+  <div class="kpi-strip mb20">
+    <div class="kpi-item">
+      <div class="kpi-lbl">참여 대상자</div>
+      <div class="kpi-val" style="color:var(--danger);">248<span style="font-size:14px;">명</span></div>
+      <div class="kpi-sub">근감소·낙상 위험군</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-lbl">방문운동 완수율</div>
+      <div class="kpi-val" style="color:var(--warn);">94.2<span style="font-size:14px;">%</span></div>
+      <div class="kpi-sub">8~10회 프로그램 기준</div>
+    </div>
+    <div class="kpi-item">
+      <div class="kpi-lbl">위험도 단계 감소</div>
+      <div class="kpi-val" style="color:#059669;">67<span style="font-size:14px;">%</span></div>
+      <div class="kpi-sub">고위험 → 중위험 이하 전환</div>
+    </div>
+    <div class="kpi-item" style="background:var(--tint);">
+      <div class="kpi-lbl">참여자 만족도</div>
+      <div class="kpi-val" style="color:var(--brand);">4.8<span style="font-size:14px;">/5</span></div>
+      <div class="kpi-sub"><span class="kpi-delta">NPS 72점</span></div>
+    </div>
+  </div>
+
+  <div class="g2 mb20">
+    <!-- Before/After table -->
+    <div class="card">
+      <div class="card-hd">
+        <span style="font-size:14px;font-weight:800;color:var(--ink);text-transform:none;letter-spacing:0;">Baseline → W12 변화</span>
+        <span style="font-size:11px;color:var(--faint);font-weight:400;margin-left:2px;">n = 248 평균</span>
+        <span class="badge badge-blue" style="margin-left:auto;font-size:10px;">InBody 재측정 연동</span>
+      </div>
+      <table class="tbl">
+        <thead>
+          <tr><th>지표</th><th>측정 출처</th><th>W0</th><th>W12</th><th style="text-align:right;">변화</th></tr>
+        </thead>
+        <tbody>
+          <tr><td style="font-weight:700;">골격근량 SMI</td><td><span style="font-size:10px;font-weight:700;color:var(--brand);">InBody</span></td><td style="color:var(--muted);font-variant-numeric:tabular-nums;">5.2 kg/m²</td><td style="font-weight:700;font-variant-numeric:tabular-nums;">6.1 kg/m²</td><td style="text-align:right;"><span class="delta-pos">+17.3%</span></td></tr>
+          <tr><td style="font-weight:700;">악력</td><td><span style="font-size:10px;font-weight:600;color:var(--muted);">현장측정</span></td><td style="color:var(--muted);font-variant-numeric:tabular-nums;">15.2 kg</td><td style="font-weight:700;font-variant-numeric:tabular-nums;">19.4 kg</td><td style="text-align:right;"><span class="delta-pos">+27.6%</span></td></tr>
+          <tr><td style="font-weight:700;">보행속도</td><td><span style="font-size:10px;font-weight:600;color:var(--muted);">SPPB</span></td><td style="color:var(--muted);font-variant-numeric:tabular-nums;">0.78 m/s</td><td style="font-weight:700;font-variant-numeric:tabular-nums;">0.98 m/s</td><td style="text-align:right;"><span class="delta-pos">+25.6%</span></td></tr>
+          <tr><td style="font-weight:700;">SPPB 점수</td><td><span style="font-size:10px;font-weight:600;color:var(--muted);">현장측정</span></td><td style="color:var(--muted);font-variant-numeric:tabular-nums;">8점</td><td style="font-weight:700;font-variant-numeric:tabular-nums;">10점</td><td style="text-align:right;"><span class="delta-pos">+25.0%</span></td></tr>
+          <tr><td style="font-weight:700;">체지방률</td><td><span style="font-size:10px;font-weight:700;color:var(--brand);">InBody</span></td><td style="color:var(--muted);font-variant-numeric:tabular-nums;">36.8%</td><td style="font-weight:700;font-variant-numeric:tabular-nums;">33.2%</td><td style="text-align:right;"><span class="delta-neg">-3.6%p</span></td></tr>
+          <tr><td style="font-weight:700;">낙상 위험도</td><td><span style="font-size:10px;font-weight:600;color:var(--muted);">복합</span></td><td><span class="rp rp-h">고위험</span></td><td><span class="rp rp-m">중위험</span></td><td style="text-align:right;"><span class="delta-neg">단계 개선</span></td></tr>
+        </tbody>
+      </table>
+      <div style="padding:10px 16px;background:var(--bg-alt);border-top:1px solid var(--border-s);font-size:11px;color:var(--muted);border-radius:0 0 var(--r) var(--r);display:flex;align-items:center;gap:6px;">
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4M12 16h.01"/></svg>
+        비의료적 운동개입 성과 — 진단·치료를 대체하지 않습니다.
+      </div>
+    </div>
+
+    <!-- Chart -->
+    <div class="card card-p">
+      <div class="label mb8">전체 참여자 지표 개선율 (%)</div>
+      <canvas id="agg-chart" height="240"></canvas>
+    </div>
+  </div>
+
+  <div class="g2">
+    <!-- Timeline + outputs -->
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card card-p">
+        <div class="label mb16">PoC 12주 진행 일정</div>
+        <div class="tl mb16">
+          <div class="tl-step done"><div class="tl-dot">W1</div><div class="tl-lbl">모집<br>Baseline</div></div>
+          <div class="tl-step done"><div class="tl-dot">W3</div><div class="tl-lbl">분류<br>설계</div></div>
+          <div class="tl-step cur"><div class="tl-dot">W4</div><div class="tl-lbl">개입<br>코칭</div></div>
+          <div class="tl-step"><div class="tl-dot">W12</div><div class="tl-lbl">재측정<br>보고</div></div>
+        </div>
+        <div style="background:var(--bg-alt);border:1px solid var(--border);border-radius:8px;padding:12px;display:flex;align-items:center;justify-content:space-between;">
+          <div><div style="font-size:11px;color:var(--muted);">시작</div><div style="font-size:13px;font-weight:700;">2026.07.20</div></div>
+          <div style="width:60px;height:2px;background:var(--brand);border-radius:1px;position:relative;"><div style="position:absolute;left:35%;top:-4px;width:10px;height:10px;border-radius:50%;background:var(--brand);border:2px solid white;box-shadow:0 0 0 2px var(--brand);"></div></div>
+          <div><div style="font-size:11px;color:var(--muted);">완료 목표</div><div style="font-size:13px;font-weight:700;">2026.11.13</div></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-hd"><span style="font-size:14px;font-weight:800;color:var(--ink);text-transform:none;letter-spacing:0;">공동 산출물</span></div>
+        <table class="tbl">
+          <tbody>
+            <tr><td style="font-weight:700;">위험군 관리 리포트</td><td style="color:var(--muted);font-size:12px;">개인·보호자·기관별 자동 생성</td><td><span class="badge badge-green">완료</span></td></tr>
+            <tr><td style="font-weight:700;">방문운동 프로토콜</td><td style="color:var(--muted);font-size:12px;">표준화 가이드 및 코치 교육자료</td><td><span class="badge badge-green">완료</span></td></tr>
+            <tr><td style="font-weight:700;">B2G·B2B 제안 패키지</td><td style="color:var(--muted);font-size:12px;">지자체·병원·보험사 공동 제안서</td><td><span class="badge badge-amber">진행중</span></td></tr>
+            <tr><td style="font-weight:700;">PoC 결과보고서</td><td style="color:var(--muted);font-size:12px;">InBody × 리브라이블리 공동 서명</td><td><span class="badge badge-gray">11월 예정</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Roadmap -->
+    <div class="card card-p">
+      <div class="label mb16">확장 로드맵</div>
+      <div class="rm-row">
+        <div class="rm-yr">2026</div>
+        <div>
+          <div class="rm-t">B2G 고도화 · 공동 PoC 검증</div>
+          <div class="rm-d">서울시 8개구 운영 고도화. InBody 재측정 체계 정착. PoC 결과보고서 발행 후 타 자치구 확장 기반 마련.</div>
+        </div>
+      </div>
+      <div class="rm-row">
+        <div class="rm-yr" style="color:#059669;">2027</div>
+        <div>
+          <div class="rm-t">병원·보험사 상품화 패키지</div>
+          <div class="rm-d">퇴원 후 회복·예방관리 상품화. 병원 외래 연계, 실손보험 적용 시범. InBody 기기 병원 내 설치 공동 영업.</div>
+        </div>
+      </div>
+      <div class="rm-row" style="opacity:.6;">
+        <div class="rm-yr" style="color:#7C3AED;">2028~</div>
+        <div>
+          <div class="rm-t">글로벌 확산</div>
+          <div class="rm-d">InBody 글로벌 유통망(60개국+) 연계. 고령화 사회 진입 동남아·동유럽 운영 모델 수출.</div>
+        </div>
+      </div>
+      <div style="margin-top:16px;padding:20px;background:var(--navy);border-radius:10px;color:white;">
+        <div style="font-size:10px;color:rgba(255,255,255,.35);font-weight:700;letter-spacing:.08em;margin-bottom:12px;">CORE PROPOSITION</div>
+        <div style="font-size:18px;font-weight:800;line-height:1.55;color:white;letter-spacing:-0.02em;">"InBody는 정밀하게 측정하고,<br>리브라이블리는 현장에서 변화시킵니다"</div>
+        <div style="margin-top:14px;padding-top:14px;border-top:1px solid rgba(255,255,255,.1);font-size:12px;color:rgba(255,255,255,.45);">InBody × 리브라이블리 · 2026 PoC 파트너십</div>
+      </div>
+    </div>
+  </div>
+</div>
+</div>
+
+<!-- ══════════ ASK / PARTNERSHIP ══════════ -->
+<div class="view" id="v-ask">
+<div class="wrap">
+
+  <div style="margin-bottom:20px;">
+    <h2 class="pg-title">InBodyLIKE에 제안하는 협업</h2>
+    <p class="pg-sub">역할이 분명하고, 일정이 검증 가능하며, 산출물이 명확한 4개월 공동 PoC</p>
+  </div>
+
+  <div class="g3 mb20">
+    <div class="card card-p">
+      <div style="width:34px;height:34px;border-radius:9px;background:var(--tint2);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.75" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M9 22v-4h6v4"/><path d="M8 6h.01M16 6h.01M12 6h.01M8 10h.01M16 10h.01M12 10h.01"/></svg>
+      </div>
+      <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:6px;">기기 · 데이터 연계</div>
+      <div style="font-size:13px;line-height:1.7;color:var(--muted);">PoC용 InBody 기기 거점 배치(복지관·데이케어 2~3개소), 측정 데이터·리포트 연계 방식 자문. 초기엔 리포트 수준 연계로 시작해 부담 최소화.</div>
+    </div>
+    <div class="card card-p" style="border-color:var(--brand);box-shadow:0 0 0 1px var(--brand);">
+      <div style="width:34px;height:34px;border-radius:9px;background:var(--brand);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="white" stroke-width="1.75" stroke-linecap="round"><circle cx="9" cy="7" r="3"/><path d="M2 21c.9-3.5 3.3-5 7-5s6 1.5 7 5"/><path d="M16 4l2 2 4-4"/></svg>
+      </div>
+      <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:6px;">공동 PoC 설계 · 수행</div>
+      <div style="font-size:13px;line-height:1.7;color:var(--muted);">육성기간(7.20~11.13) 내 12주 실증. 100~300명 위험군 대상 지표 정의·프로토콜 공동 설계, 결과 공동 검토·공동 서명 보고서.</div>
+    </div>
+    <div class="card card-p">
+      <div style="width:34px;height:34px;border-radius:9px;background:var(--tint2);display:flex;align-items:center;justify-content:center;margin-bottom:12px;">
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--brand)" stroke-width="1.75" stroke-linecap="round"><path d="M12 2v20M2 12h20"/><circle cx="12" cy="12" r="9"/></svg>
+      </div>
+      <div style="font-size:15px;font-weight:800;color:var(--ink);margin-bottom:6px;">사업화 · 투자 검토</div>
+      <div style="font-size:13px;line-height:1.7;color:var(--muted);">PoC 결과 기반 지자체·병원·보험사 공동 상품화 패키지. Bluepoint 투자 및 TIPS·R&D 연계 검토 요청.</div>
+    </div>
+  </div>
+
+  <!-- Impact calculator -->
+  <div class="card mb20">
+    <div class="card-hd">
+      <span style="font-size:14px;font-weight:800;color:var(--ink);text-transform:none;letter-spacing:-0.01em;">협업 임팩트 시뮬레이터</span>
+      <span style="font-size:11px;color:var(--faint);font-weight:400;">확장 시 InBody 측정 수요가 어떻게 커지는지 직접 조절해 보세요 · 예시 가정</span>
+    </div>
+    <div class="calc-grid">
+      <div style="padding:20px;border-right:1px solid var(--border-s);">
+        <div style="margin-bottom:18px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--body);margin-bottom:6px;"><span>참여 자치구</span><span style="color:var(--brand);" id="c-gu-v">8개</span></div>
+          <input type="range" id="c-gu" min="1" max="25" value="8" style="width:100%;accent-color:var(--brand);" oninput="calc()">
+        </div>
+        <div style="margin-bottom:18px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--body);margin-bottom:6px;"><span>자치구당 관리 대상자</span><span style="color:var(--brand);" id="c-pp-v">200명</span></div>
+          <input type="range" id="c-pp" min="50" max="1000" step="50" value="200" style="width:100%;accent-color:var(--brand);" oninput="calc()">
+        </div>
+        <div style="margin-bottom:6px;">
+          <div style="display:flex;justify-content:space-between;font-size:12px;font-weight:700;color:var(--body);margin-bottom:6px;"><span>연간 측정 주기 (1인당)</span><span style="color:var(--brand);" id="c-cy-v">4회</span></div>
+          <input type="range" id="c-cy" min="2" max="8" value="4" style="width:100%;accent-color:var(--brand);" oninput="calc()">
+        </div>
+        <div style="font-size:11px;color:var(--faint);line-height:1.6;margin-top:12px;">* 12주 주기 재측정 기준 예시 가정. 병원·보험 채널 확장 미포함.</div>
+      </div>
+      <div style="padding:20px;display:grid;grid-template-columns:repeat(3,1fr);gap:16px;align-content:center;">
+        <div style="text-align:center;">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">연간 InBody 측정</div>
+          <div style="font-size:34px;font-weight:800;color:var(--brand);letter-spacing:-0.04em;font-variant-numeric:tabular-nums;" id="r-meas">6,400건</div>
+          <div style="font-size:11px;color:var(--faint);margin-top:4px;">측정 + 재측정 합산</div>
+        </div>
+        <div style="text-align:center;border-left:1px solid var(--border-s);border-right:1px solid var(--border-s);">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">종단 데이터 포인트</div>
+          <div style="font-size:34px;font-weight:800;color:var(--ink);letter-spacing:-0.04em;font-variant-numeric:tabular-nums;" id="r-data">38,400개</div>
+          <div style="font-size:11px;color:var(--faint);margin-top:4px;">핵심지표 6개 × 측정</div>
+        </div>
+        <div style="text-align:center;">
+          <div style="font-size:11px;font-weight:700;color:var(--muted);margin-bottom:8px;">측정 거점 수요</div>
+          <div style="font-size:34px;font-weight:800;color:var(--ink);letter-spacing:-0.04em;font-variant-numeric:tabular-nums;" id="r-site">16개소</div>
+          <div style="font-size:11px;color:var(--faint);margin-top:4px;">자치구당 2개소 기준</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="g2">
+    <div class="card card-p">
+      <div class="label mb16">4개월 실행 일정 — 육성기간 내 완결</div>
+      <div class="rm-row"><div class="rm-yr">7월</div><div><div class="rm-t">킥오프 · 공동 설계 (W-2~0)</div><div class="rm-d">지표·프로토콜 확정, 기기 거점 협의, 대상자 모집 개시</div></div></div>
+      <div class="rm-row"><div class="rm-yr">8월</div><div><div class="rm-t">Baseline · 개입 시작 (W1~4)</div><div class="rm-d">InBody 측정, 위험군 분류, 방문운동 개시</div></div></div>
+      <div class="rm-row"><div class="rm-yr">9~10월</div><div><div class="rm-t">개입 · 중간 점검 (W5~10)</div><div class="rm-d">방문운동 8~10회 수행, 생활습관 코칭, 중간 리포트</div></div></div>
+      <div class="rm-row"><div class="rm-yr">11월</div><div><div class="rm-t">재측정 · 성과 공유회 (W11~12)</div><div class="rm-d">InBody 재측정, 공동 결과보고서, 11월 4주차 최종 성과 공유회 발표</div></div></div>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:16px;">
+      <div class="card card-p" style="background:var(--navy);border-color:var(--navy);">
+        <div style="font-size:10px;color:rgba(255,255,255,.35);font-weight:700;letter-spacing:.08em;margin-bottom:12px;">WHY LIVELIVELY</div>
+        <div style="font-size:17px;font-weight:800;line-height:1.55;color:white;letter-spacing:-0.02em;">측정 제휴 파트너는 많습니다.<br>공공 행정·결과보고·정산까지<br><span style="color:#7FA8FF;">완결하는 운영 파트너</span>는 드뭅니다.</div>
+        <div style="margin-top:14px;display:flex;gap:14px;flex-wrap:wrap;">
+          <div><div style="font-size:20px;font-weight:800;color:white;">8개구</div><div style="font-size:10px;color:rgba(255,255,255,.45);">2026 수행기관</div></div>
+          <div><div style="font-size:20px;font-weight:800;color:white;">830건·민원0</div><div style="font-size:10px;color:rgba(255,255,255,.45);">동대문구 완수</div></div>
+          <div><div style="font-size:20px;font-weight:800;color:white;">300+</div><div style="font-size:10px;color:rgba(255,255,255,.45);">코치 네트워크</div></div>
+        </div>
+      </div>
+      <div class="card card-p">
+        <div class="label mb12">CONTACT</div>
+        <div style="display:flex;align-items:center;gap:12px;">
+          <div class="cf-av" style="width:40px;height:40px;font-size:14px;">지</div>
+          <div style="flex:1;">
+            <div style="font-size:15px;font-weight:800;color:var(--ink);">지창대 · 대표</div>
+            <div style="font-size:12px;color:var(--muted);">리브라이블리(주) · LIVELIVELY INC.</div>
+          </div>
+        </div>
+        <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
+          <a class="btn btn-primary btn-sm" href="mailto:ceo@livelively.kr">ceo@livelively.kr</a>
+          <a class="btn btn-ghost btn-sm" href="https://www.livelively.kr" target="_blank">www.livelively.kr</a>
+        </div>
+        <div style="margin-top:12px;font-size:11px;color:var(--faint);line-height:1.6;">미팅 1회면 PoC 설계 초안을 확정할 수 있도록 준비되어 있습니다.</div>
+      </div>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script>
+// — Navigation —
+function go(id) {
+  if(!document.getElementById('v-'+id)) id='home';
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
+  document.getElementById('v-'+id).classList.add('on');
+  const map={home:0,cf:1,nc:2,rpt:3,ask:4};
+  const tabs=document.querySelectorAll('.ntab');
+  if(map[id]!==undefined)tabs[map[id]].classList.add('on');
+  if(id==='cf'&&!window._pChart){initCF();}
+  if(id==='nc'&&!window._mChart){initNC();}
+  if(id==='rpt'&&!window._aChart){initRpt();}
+  if(id==='ask'){calc();}
+  if(history.replaceState)history.replaceState(null,'','#'+id);
+  window.scrollTo({top:0});
+}
+document.querySelectorAll('.ntab').forEach(t=>t.addEventListener('click',()=>go(t.dataset.v)));
+window.addEventListener('hashchange',()=>go(location.hash.replace('#','')||'home'));
+if(location.hash)go(location.hash.replace('#',''));
+
+// — Count-up animation —
+function countUp(el,target,suffix){
+  const dur=900,t0=performance.now();
+  function step(t){
+    const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);
+    el.textContent=Math.round(target*e).toLocaleString()+(suffix||'');
+    if(p<1)requestAnimationFrame(step);
+  }
+  requestAnimationFrame(step);
+}
+
+// — Impact calculator —
+function calc(){
+  const gu=+document.getElementById('c-gu').value;
+  const pp=+document.getElementById('c-pp').value;
+  const cy=+document.getElementById('c-cy').value;
+  document.getElementById('c-gu-v').textContent=gu+'개';
+  document.getElementById('c-pp-v').textContent=pp.toLocaleString()+'명';
+  document.getElementById('c-cy-v').textContent=cy+'회';
+  const meas=gu*pp*cy, data=meas*6, site=gu*2;
+  countUp(document.getElementById('r-meas'),meas,'건');
+  countUp(document.getElementById('r-data'),data,'개');
+  countUp(document.getElementById('r-site'),site,'개소');
+}
+
+// — Client data —
+const clients=[
+  {n:'김순자',a:'75세 여',d:'동대문구',r:'high',smi:'6.1 kg/m²',sd:'+17.3%',sppb:'10점',sp:'+25%',coach:'이지연',last:'06.10'},
+  {n:'이복순',a:'72세 여',d:'성북구',  r:'mid', smi:'5.8 kg/m²',sd:'+8.2%', sppb:'9점', sp:'+12.5%',coach:'박민준',last:'06.09'},
+  {n:'박용수',a:'78세 남',d:'송파구',  r:'high',smi:'7.1 kg/m²',sd:'+6.4%', sppb:'8점', sp:'+14.3%',coach:'최수진',last:'06.11'},
+  {n:'정옥희',a:'68세 여',d:'서초구',  r:'watch',smi:'6.2 kg/m²',sd:'+3.1%',sppb:'10점',sp:'+0%',  coach:'김태양',last:'06.08'},
+  {n:'최명수',a:'80세 남',d:'강동구',  r:'mid', smi:'6.8 kg/m²',sd:'+10.2%',sppb:'8점', sp:'+14.3%',coach:'이지연',last:'06.07'},
+  {n:'윤미영',a:'71세 여',d:'광진구',  r:'mid', smi:'5.5 kg/m²',sd:'+11.8%',sppb:'9점', sp:'+12.5%',coach:'박민준',last:'06.09'},
+  {n:'강철호',a:'77세 남',d:'양천구',  r:'high',smi:'6.5 kg/m²',sd:'+7.9%', sppb:'7점', sp:'+16.7%',coach:'최수진',last:'06.06'},
+];
+const RL={high:'rp-h',mid:'rp-m',watch:'rp-w'};
+const RN={high:'고위험',mid:'중위험',watch:'관찰군'};
+
+function renderC(f){
+  const list=f==='all'?clients:clients.filter(c=>c.r===f);
+  document.getElementById('ctbody').innerHTML=list.map((c,i)=>`
+  <tr onclick="openNC(${clients.indexOf(c)})">
+    <td><strong>${c.n}</strong></td>
+    <td style="color:var(--muted);">${c.a}</td>
+    <td><span class="rp ${RL[c.r]}">${RN[c.r]}</span></td>
+    <td><strong>${c.smi}</strong> <span style="font-size:11px;color:var(--brand);font-weight:700;">${c.sd}</span></td>
+    <td>${c.sppb} <span style="font-size:11px;color:var(--brand);font-weight:700;">${c.sp}</span></td>
+    <td style="color:var(--muted);">${c.coach}</td>
+    <td style="color:var(--muted);">${c.last}</td>
+  </tr>`).join('');
+}
+
+function filterC(r,el){
+  document.querySelectorAll('#risk-tabs .chip-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  renderC(r);
+}
+
+function openNC(i){
+  const c=clients[i];
+  document.getElementById('nc-name').textContent=c.n;
+  document.getElementById('nc-meta').innerHTML=`${c.a} · ${c.d} · <span class="rp ${RL[c.r]}">${RN[c.r]}</span>`;
+  go('nc');
+}
+
+// — CF Charts —
+const P={brand:'#0059FF',border:'#E2E8F0',muted:'#6B7380',body:'#373737',tint2:'#E5EDFF',bg:'#F8FAFC'};
+
+function initCF(){
+  renderC('all');
+  const ctx=document.getElementById('perf-chart').getContext('2d');
+  window._pChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['균형감각','보행속도','하지근기능','인지·반응','체력'],
+      datasets:[{
+        data:[28,35,120,18,41],
+        backgroundColor:['#C8D8FF','#A8BEFF',P.brand,'#C8D8FF','#A8BEFF'],
+        borderRadius:5,borderSkipped:false,
+      }]
+    },
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` +${c.parsed.y}%`}}},
+      scales:{
+        y:{beginAtZero:true,max:140,grid:{color:P.border},ticks:{callback:v=>v+'%',font:{size:11,family:'Pretendard'},color:P.muted}},
+        x:{grid:{display:false},ticks:{font:{size:11,family:'Pretendard'},color:P.body}}
+      }
+    }
+  });
+}
+
+// — NC Progress Chart —
+const mdata={
+  smi:{t:'골격근량 SMI (kg/m²)',data:[5.2,5.35,5.5,5.7,5.85,5.95,6.1],min:4.5,max:7},
+  sppb:{t:'SPPB 점수',data:[8,8,8.2,8.5,9,9.2,10],min:6,max:12},
+  gait:{t:'보행속도 (m/s)',data:[0.78,0.80,0.83,0.87,0.90,0.94,0.98],min:0.5,max:1.2},
+  grip:{t:'악력 (kg)',data:[15.2,16.1,16.8,17.5,18.1,18.8,19.4],min:10,max:25},
+};
+const wks=['W0','W2','W4','W6','W8','W10','W12'];
+
+function initNC(){
+  // Animate progress bars
+  setTimeout(()=>{
+    document.querySelectorAll('.prog-fill').forEach(el=>{
+      const w=el.style.width||el.getAttribute('data-w')||'0%';
+      el.style.width=w;
+    });
+  },100);
+  const ctx=document.getElementById('prog-chart').getContext('2d');
+  const m=mdata.smi;
+  window._mChart=new Chart(ctx,{
+    type:'line',
+    data:{labels:wks,datasets:[{label:m.t,data:m.data,borderColor:P.brand,backgroundColor:P.tint2+'80',borderWidth:2.5,pointBackgroundColor:P.brand,pointRadius:4,pointHoverRadius:6,fill:true,tension:.35}]},
+    options:{
+      responsive:true,
+      plugins:{legend:{display:false}},
+      scales:{
+        y:{suggestedMin:m.min,suggestedMax:m.max,grid:{color:P.border},ticks:{font:{size:11,family:'Pretendard'},color:P.muted}},
+        x:{grid:{display:false},ticks:{font:{size:11,family:'Pretendard'},color:P.muted}}
+      }
+    }
+  });
+}
+
+function switchM(k,el){
+  document.querySelectorAll('#prog-tabs .chip-tab').forEach(t=>t.classList.remove('on'));
+  el.classList.add('on');
+  const m=mdata[k];
+  document.getElementById('prog-title').textContent=m.t;
+  if(!window._mChart)return;
+  const ds=window._mChart.data.datasets[0];
+  ds.data=m.data;ds.label=m.t;
+  window._mChart.options.scales.y.suggestedMin=m.min;
+  window._mChart.options.scales.y.suggestedMax=m.max;
+  window._mChart.update();
+}
+
+// — Report Chart —
+function initRpt(){
+  const ctx=document.getElementById('agg-chart').getContext('2d');
+  window._aChart=new Chart(ctx,{
+    type:'bar',
+    data:{
+      labels:['골격근량(SMI)','악력','보행속도','SPPB','체지방 감소'],
+      datasets:[{
+        data:[17.3,27.6,25.6,25.0,9.8],
+        backgroundColor:[P.brand,'#0C39B7','#4D84FF','#A8BEFF','#C8D8FF'],
+        borderRadius:5,borderSkipped:false,
+      }]
+    },
+    options:{
+      indexAxis:'y',
+      responsive:true,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:c=>` ${c.parsed.x}% 개선`}}},
+      scales:{
+        x:{beginAtZero:true,max:35,grid:{color:P.border},ticks:{callback:v=>v+'%',font:{size:11,family:'Pretendard'},color:P.muted}},
+        y:{grid:{display:false},ticks:{font:{size:12,weight:'600',family:'Pretendard'},color:P.body}}
+      }
+    }
+  });
+}
+</script>
+</body>
+</html>
