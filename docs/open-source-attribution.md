@@ -12,6 +12,8 @@
 | **Pretendard 1.3.9 (Variable)** | 한글 본문 웹폰트 | SIL Open Font License 1.1 | jsDelivr CDN | https://github.com/orioncactus/pretendard · [LICENSE](https://github.com/orioncactus/pretendard/blob/main/LICENSE) |
 
 > SIL OFL 1.1 준수 사항: 폰트 자체를 재판매하지 않으며, 폰트를 로컬 동봉하게 될 경우 원본 라이선스 파일을 함께 포함한다(현재는 CDN 로드라 별도 동봉 없음).
+>
+> **오프라인 번들 시**: `vendor/fetch-assets.sh`가 Chart.js·Pretendard를 로컬로 받을 때 각 라이선스 파일(`Chart.js-LICENSE.md`, `pretendard/Pretendard-LICENSE`)도 함께 내려받아 동봉하도록 작성되어 있다(라이선스 고지 자동 준수).
 
 ## 2. 패턴/아이디어만 참고한 프로젝트 (코드 미복사)
 

@@ -81,3 +81,26 @@
 - **API/DB**: 없음(클라이언트 전용).
 - **롤백**: `calc()`의 replaceState·`applyCalcParams`·`shareCalc`·버튼 제거, `go()/curTab()` 원복 또는 `git revert`.
 - **DoD**: [x] 공유 링크로 슬라이더 복원, [x] 값 변경 시 URL 갱신, [x] 복사 동작, [x] 투어/방향키 회귀 없음, [x] JS·HTML 검증 통과.
+
+---
+
+## 사이클 3 — 오프라인 복원력 · 발표자 모드 · 데이터 레이어 (구현 완료)
+
+### 개선안 #6 — 오프라인 발표 복원력 (부분)
+- **제약**: 빌드 샌드박스가 CDN 다운로드를 차단(403) → 자산 실제 번들은 이 환경에서 불가.
+- **구현(무다운로드, 검증됨)**: 한글 시스템 폰트 폴백 스택 강화 / `ensureChart()`로 Chart.js 미로딩 시 캔버스를 안내 문구로 대체(비충돌).
+- **구현(도구 제공, 미실행)**: `vendor/fetch-assets.sh` + `vendor/README.md` — 네트워크 가능 환경에서 Chart.js(MIT)·Pretendard(OFL) + 라이선스 동봉, `index.html`을 로컬 경로로 전환(백업 생성).
+- **롤백**: 폰트/`ensureChart` 변경 revert. 번들 적용분은 `mv index.html.bak index.html`.
+
+### 개선안 #3 — 발표자 풀스크린 모드
+- **구현**: `toggleFullscreen()`(Fullscreen API + webkit 폴백), `F` 키 + nav "발표 모드" 버튼(aria-label), `fullscreenchange`로 라벨 동기화 및 `body.presenting` 클래스(발표 중 nav 배지 정리).
+- **롤백**: 버튼·함수·키바인딩·`.presenting` 규칙 제거 또는 revert.
+- **DoD**: [x] F/버튼으로 전체화면 토글, [x] 라벨 동기화, [x] 입력 중 F 무시, [x] 회귀 없음.
+
+### 개선안 #4 — 데이터 레이어 분리 (측정 가능 범위)
+- **구현**: initCF/initRpt에 묻혀 있던 차트 데이터셋을 `perfChart`/`aggChart` 명명 상수 + "DEMO DATA" 배너로 분리(팔레트 옆). 동작 불변.
+- **범위 외(의도)**: KPI strip·리포트 표의 마크업 내장 숫자는 템플릿화하지 않음(대규모 리라이트 금지 원칙).
+- **롤백**: 상수 인라인 복원 또는 revert.
+- **DoD**: [x] 차트 동일 렌더, [x] 단일 편집 지점, [x] JS 검증 통과.
+
+> JSON 외부화(fetch)는 `file://`에서 CORS로 막혀 채택하지 않음 — in-JS 객체가 데모 배포에 안전.
