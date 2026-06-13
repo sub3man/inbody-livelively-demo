@@ -393,6 +393,9 @@ html,body{word-break:keep-all;}
 .cf-nav-item:focus-visible, .btn:focus-visible{
   outline:2px solid var(--brand); outline-offset:2px; border-radius:4px;
 }
+/* 발표 모드(전체화면): nav 배지 정리해 화면 집중 */
+body.presenting .nav-tag:not(#fs-btn){ display:none; }
+
 /* 모션 최소화 선호 시 애니메이션·전환 비활성화 */
 @media (prefers-reduced-motion: reduce){
   *, *::before, *::after{
@@ -418,6 +421,10 @@ html,body{word-break:keep-all;}
     <div class="ntab" data-v="ask">협업 제안</div>
   </div>
   <div class="nav-end">
+    <button class="nav-tag" id="fs-btn" onclick="toggleFullscreen()" aria-label="발표 모드(전체화면) 전환 — 단축키 F" title="발표 모드 (F)" style="cursor:pointer;font-family:inherit;">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M8 21H5a2 2 0 01-2-2v-3M16 21h3a2 2 0 002-2v-3"/></svg>
+      <span id="fs-label">발표 모드</span>
+    </button>
     <div class="nav-tag"><span class="live-dot"></span>DEMO</div>
     <div class="nav-tag">PoC D-38</div>
   </div>
@@ -1807,7 +1814,30 @@ document.addEventListener('keydown',e=>{
   const i=TOUR.indexOf(curTab());
   if(e.key==='ArrowRight')go(TOUR[(i+1)%TOUR.length]);
   if(e.key==='ArrowLeft')go(TOUR[(i-1+TOUR.length)%TOUR.length]);
+  if(e.key==='f'||e.key==='F')toggleFullscreen();
 });
+
+// — Presenter / fullscreen mode (단축키 F · 발표 모드 버튼) —
+function toggleFullscreen(){
+  const d=document, el=d.documentElement;
+  const fsEl=d.fullscreenElement||d.webkitFullscreenElement;
+  if(!fsEl){
+    const req=el.requestFullscreen||el.webkitRequestFullscreen;
+    if(req) req.call(el).catch(()=>{});
+  } else {
+    const exit=d.exitFullscreen||d.webkitExitFullscreen;
+    if(exit) exit.call(d).catch(()=>{});
+  }
+}
+// 전체화면 상태에 맞춰 버튼 라벨/표시 동기화
+function _syncFsLabel(){
+  const on=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  const lbl=document.getElementById('fs-label');
+  if(lbl) lbl.textContent=on?'나가기':'발표 모드';
+  document.body.classList.toggle('presenting',on);
+}
+document.addEventListener('fullscreenchange',_syncFsLabel);
+document.addEventListener('webkitfullscreenchange',_syncFsLabel);
 </script>
 </body>
 </html>
