@@ -426,7 +426,7 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
       <span id="fs-label">발표 모드</span>
     </button>
     <div class="nav-tag"><span class="live-dot"></span>DEMO</div>
-    <div class="nav-tag">PoC D-38</div>
+    <div class="nav-tag" data-dday>PoC D-38</div>
   </div>
 </nav>
 
@@ -961,7 +961,7 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
               <div class="cf-av" style="width:30px;height:30px;font-size:11px;">김</div>
             </div>
             <div style="padding:4px 0 12px;">
-              <div style="font-size:12px;color:var(--muted);">2026년 6월 12일 · 금</div>
+              <div style="font-size:12px;color:var(--muted);" data-today-k>2026년 6월 12일 · 금</div>
               <div style="font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-0.025em;line-height:1.2;margin-top:4px;">안녕하세요,<br><span style="color:var(--brand);">김순자 회원님</span></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
@@ -1230,7 +1230,7 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
       <span class="rpt-period">12주 PoC 시범운영 · 서울시 12개 자치구 · 2026 상반기 · n = 248</span>
-      <div style="font-size:11px;color:var(--faint);margin-top:3px;">리포트 생성: 2026.06.12 · InBody × 리브라이블리 공동</div>
+      <div style="font-size:11px;color:var(--faint);margin-top:3px;">리포트 생성: <span data-today-dot>2026.06.12</span> · InBody × 리브라이블리 공동</div>
     </div>
     <div style="display:flex;gap:8px;">
       <button class="btn btn-ghost btn-sm" onclick="printDoc()">PDF 내보내기</button>
@@ -1561,6 +1561,23 @@ document.querySelectorAll('.ntab').forEach(t=>{
 });
 window.addEventListener('hashchange',()=>go(viewFromHash()));
 if(location.hash)go(viewFromHash());
+
+// — Dynamic dates (데모가 항상 '오늘' 기준으로 보이도록) —
+// PoC 시작 앵커는 고정(2026-07-20). D-카운터·리포트 생성일·앱 홈 날짜만 오늘 기준 계산.
+const POC_START=new Date(2026,6,20); // month는 0-based → 7월
+const WEEKDAYS=['일','월','화','수','목','금','토'];
+function pad2(n){return String(n).padStart(2,'0');}
+function fmtDot(d){return d.getFullYear()+'.'+pad2(d.getMonth()+1)+'.'+pad2(d.getDate());}
+function fmtKDate(d){return d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 · '+WEEKDAYS[d.getDay()];}
+function initDates(){
+  const t=new Date(), midnight=new Date(t.getFullYear(),t.getMonth(),t.getDate());
+  const dday=Math.round((POC_START-midnight)/86400000);
+  const ddayTxt = dday>0?('PoC D-'+dday) : dday===0?'PoC D-DAY' : 'PoC 진행중';
+  document.querySelectorAll('[data-dday]').forEach(el=>el.textContent=ddayTxt);
+  document.querySelectorAll('[data-today-dot]').forEach(el=>el.textContent=fmtDot(t));
+  document.querySelectorAll('[data-today-k]').forEach(el=>el.textContent=fmtKDate(t));
+}
+initDates();
 
 // — Print / PDF export —
 // 현재 보이는 탭을 브라우저 인쇄(PDF 저장)로 내보냄. 의존성 없음 · 오프라인 동작.
