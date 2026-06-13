@@ -1560,7 +1560,7 @@ document.querySelectorAll('.ntab').forEach(t=>{
   t.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();go(t.dataset.v);} });
 });
 window.addEventListener('hashchange',()=>go(viewFromHash()));
-if(location.hash)go(viewFromHash());
+// 최초 딥링크 내비게이션은 스크립트 끝(모든 const/래퍼 정의 후)에서 수행 — TDZ 방지
 
 // — Dynamic dates (데모가 항상 '오늘' 기준으로 보이도록) —
 // PoC 시작 앵커는 고정(2026-07-20). D-카운터·리포트 생성일·앱 홈 날짜만 오늘 기준 계산.
@@ -1853,12 +1853,13 @@ document.addEventListener('keydown',e=>{
 function toggleFullscreen(){
   const d=document, el=d.documentElement;
   const fsEl=d.fullscreenElement||d.webkitFullscreenElement;
+  // webkit 접두 API는 Promise가 아닌 undefined를 반환할 수 있어 .catch 전에 가드
   if(!fsEl){
     const req=el.requestFullscreen||el.webkitRequestFullscreen;
-    if(req) req.call(el).catch(()=>{});
+    if(req){ const p=req.call(el); if(p&&p.catch)p.catch(()=>{}); }
   } else {
     const exit=d.exitFullscreen||d.webkitExitFullscreen;
-    if(exit) exit.call(d).catch(()=>{});
+    if(exit){ const p=exit.call(d); if(p&&p.catch)p.catch(()=>{}); }
   }
 }
 // 전체화면 상태에 맞춰 버튼 라벨/표시 동기화
@@ -1870,6 +1871,11 @@ function _syncFsLabel(){
 }
 document.addEventListener('fullscreenchange',_syncFsLabel);
 document.addEventListener('webkitfullscreenchange',_syncFsLabel);
+
+// — 최초 딥링크 내비게이션 (모든 const/차트 init/go 래퍼 정의 후 실행) —
+// 상단에서 호출하면 initCF/initNC/initRpt가 참조하는 하단 const(P, perfChart, mdata…)가
+// TDZ 상태라 #cf/#nc/#rpt 딥링크 로드 시 ReferenceError가 발생하므로 여기서 호출한다.
+if(location.hash)go(viewFromHash());
 </script>
 </body>
 </html>

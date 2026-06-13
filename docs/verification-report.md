@@ -115,4 +115,31 @@
 - D-day 분기: 시작 전 `PoC D-N`, 당일 `PoC D-DAY`, 이후 `PoC 진행중`.
 
 ## 종합 결론
-사이클 1–4 정적 검증 전부 통과. **새 런타임 의존성 0, 외부 OSS 코드 복사 0**(번들 스크립트는 사용자가 선택 실행). 변경은 모두 추가/치환 전용으로 회귀 위험 낮음. 인쇄·클립보드·전체화면·오프라인 폰트·reduced-motion·실제 자산 번들은 환경 의존이라 사람이 1회 수동 확인 권장.
+사이클 1–4 정적 검증 전부 통과.
+
+---
+
+## 사이클 5 — 코드 리뷰 & 버그 수정
+
+전체 브랜치 diff(`main...HEAD`)를 대상으로 라인-바이-라인 correctness + 제거동작/교차파일 + 클린업 앵글로 리뷰. **실제 버그 2건 발견·수정.**
+
+### 🐞 BUG 1 (치명적) — 딥링크 시 TDZ ReferenceError
+- **증상**: `#cf`/`#nc`/`#rpt`로 **첫 로드** 시 페이지 JS 전체가 죽음.
+- **원인**: 부트스트랩 즉시 호출 `if(location.hash)go(viewFromHash())`가 스크립트 상단에 있어, `go`→`initCF/initNC/initRpt`가 참조하는 하단 `const`(P·perfChart·mdata·aggChart)가 **TDZ(임시 사각지대)** 상태 → `ReferenceError: Cannot access 'P' before initialization`. 예외가 부트스트랩에서 전파되어 이후 모든 초기화(투어 버튼·키보드·발표 모드·동적 날짜)가 미실행.
+- **영향 확대**: 사이클 1·2의 SEO 공유·시나리오 공유 링크로 딥링크 진입 가능성↑ → 잠복 버그가 표면화.
+- **수정**: 최초 딥링크 내비게이션 호출을 **스크립트 맨 끝**(모든 const·차트 init·`go` 래퍼 정의 후)으로 이동. `node` 구조 재현으로 수정 전 예외 / 수정 후 정상 확인.
+
+### 🐞 BUG 2 (브라우저 호환) — 풀스크린 promise 미가드
+- **증상**: 구형 Safari(webkit 접두 API)에서 `F`/발표 모드 클릭 시 `TypeError: ...catch is not a function`.
+- **원인**: `webkitRequestFullscreen()`/`webkitExitFullscreen()`은 Promise가 아닌 `undefined`를 반환할 수 있는데 `.catch()`를 바로 호출.
+- **수정**: 반환값 가드 — `const p=req.call(el); if(p&&p.catch)p.catch(()=>{});`.
+
+### 리뷰에서 REFUTED된 후보(기록)
+- 딥링크 시 슬라이더 미렌더 → applyCalcParams 실패: **반증**(인라인 스크립트가 `</body>` 직전, 모든 뷰 마크업[슬라이더 L1460]이 스크립트[L1535]보다 앞 → DOM 준비 완료).
+- shareCalc의 replaceState 레이스: **반증**(replaceState는 동기 API).
+- ensureChart 교체 후 getContext 호출: **반증**(`if(!ensureChart())return;`이 getContext보다 먼저, 교체는 미로딩 경로에서만).
+- openNC 동명이인 오작동: **반증**(`clients.indexOf(c)`는 객체 참조 비교).
+- 클린업 6건(메타 DRY·해시 파서 통합·풀스크린 상태 헬퍼 등): 버그 아님, 우선순위 낮음으로 보류.
+
+### 검증
+- JS `node --check` PASS · HTML 태그 균형 PASS · TDZ 구조 재현(수정 후 정상) · 풀스크린 가드 적용 확인. **새 런타임 의존성 0, 외부 OSS 코드 복사 0**(번들 스크립트는 사용자가 선택 실행). 변경은 모두 추가/치환 전용으로 회귀 위험 낮음. 인쇄·클립보드·전체화면·오프라인 폰트·reduced-motion·실제 자산 번들은 환경 의존이라 사람이 1회 수동 확인 권장.
