@@ -1660,6 +1660,21 @@ function openNC(i){
 // — CF Charts —
 const P={brand:'#0059FF',border:'#E2E8F0',muted:'#6B7380',body:'#373737',tint2:'#E5EDFF',bg:'#F8FAFC'};
 
+// ─────────────────────────────────────────────────────────────
+// DEMO DATA · 차트 데이터셋 — 다른 데모(자치구/대상자)로 교체 시 여기 수치만 수정
+// (참여자 목록은 위 clients[], 12주 추이는 mdata{}/wks[], 위험도 라벨은 RL/RN 참조)
+// ─────────────────────────────────────────────────────────────
+const perfChart={ // CareFlow: 8주 평균 기능개선율(%)
+  labels:['균형감각','보행속도','하지근기능','인지·반응','체력'],
+  data:[28,35,120,18,41],
+  colors:['#C8D8FF','#A8BEFF',P.brand,'#C8D8FF','#A8BEFF'],
+};
+const aggChart={ // 리포트: 전체 참여자 지표 개선율(%)
+  labels:['골격근량(SMI)','악력','보행속도','SPPB','체지방 감소'],
+  data:[17.3,27.6,25.6,25.0,9.8],
+  colors:[P.brand,'#0C39B7','#4D84FF','#A8BEFF','#C8D8FF'],
+};
+
 // Chart.js(CDN)가 로드되지 않은 경우(오프라인 등) graceful degradation — 캔버스를 안내 문구로 대체
 function ensureChart(canvasId){
   if(typeof Chart!=='undefined') return true;
@@ -1680,10 +1695,10 @@ function initCF(){
   window._pChart=new Chart(ctx,{
     type:'bar',
     data:{
-      labels:['균형감각','보행속도','하지근기능','인지·반응','체력'],
+      labels:perfChart.labels,
       datasets:[{
-        data:[28,35,120,18,41],
-        backgroundColor:['#C8D8FF','#A8BEFF',P.brand,'#C8D8FF','#A8BEFF'],
+        data:perfChart.data,
+        backgroundColor:perfChart.colors,
         borderRadius:5,borderSkipped:false,
       }]
     },
@@ -1752,10 +1767,10 @@ function initRpt(){
   window._aChart=new Chart(ctx,{
     type:'bar',
     data:{
-      labels:['골격근량(SMI)','악력','보행속도','SPPB','체지방 감소'],
+      labels:aggChart.labels,
       datasets:[{
-        data:[17.3,27.6,25.6,25.0,9.8],
-        backgroundColor:[P.brand,'#0C39B7','#4D84FF','#A8BEFF','#C8D8FF'],
+        data:aggChart.data,
+        backgroundColor:aggChart.colors,
         borderRadius:5,borderSkipped:false,
       }]
     },
