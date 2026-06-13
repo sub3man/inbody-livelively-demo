@@ -386,6 +386,20 @@ html,body{word-break:keep-all;}
   /* 브랜드 색·배경이 인쇄에 반영되도록 */
   *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
 }
+
+/* ═══════════════════ ACCESSIBILITY ═══════════════════ */
+/* 키보드 포커스 가시화 (탭·참여자 행·칩·사이드바) */
+.ntab:focus-visible, .tbl tbody tr:focus-visible, .chip-tab:focus-visible,
+.cf-nav-item:focus-visible, .btn:focus-visible{
+  outline:2px solid var(--brand); outline-offset:2px; border-radius:4px;
+}
+/* 모션 최소화 선호 시 애니메이션·전환 비활성화 */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration:.001ms !important; animation-iteration-count:1 !important;
+    transition-duration:.001ms !important; scroll-behavior:auto !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -396,7 +410,7 @@ html,body{word-break:keep-all;}
     <span class="nav-x">×</span>
     <span class="nav-ll">리브라이블리</span>
   </div>
-  <div class="nav-tabs">
+  <div class="nav-tabs" role="tablist" aria-label="섹션 내비게이션">
     <div class="ntab on" data-v="home">파트너십 개요</div>
     <div class="ntab" data-v="cf">CareFlow OS</div>
     <div class="ntab" data-v="nc">NoriCare</div>
@@ -1430,6 +1444,7 @@ html,body{word-break:keep-all;}
     <div class="card-hd">
       <span style="font-size:14px;font-weight:800;color:var(--ink);text-transform:none;letter-spacing:-0.01em;">협업 임팩트 시뮬레이터</span>
       <span style="font-size:11px;color:var(--faint);font-weight:400;">확장 시 InBody 측정 수요가 어떻게 커지는지 직접 조절해 보세요 · 예시 가정</span>
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="shareCalc(this)">시나리오 링크 복사</button>
     </div>
     <div class="calc-grid">
       <div style="padding:20px;border-right:1px solid var(--border-s);">
@@ -1512,7 +1527,10 @@ html,body{word-break:keep-all;}
 
 <script>
 // — Navigation —
+// 해시는 "#ask?gu=20&pp=500&cy=6"처럼 쿼리를 포함할 수 있음(시나리오 공유 링크).
+function viewFromHash(){ return (location.hash.replace('#','').split('?')[0])||'home'; }
 function go(id) {
+  id=(id||'').split('?')[0];
   if(!document.getElementById('v-'+id)) id='home';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
@@ -1520,16 +1538,22 @@ function go(id) {
   const map={home:0,cf:1,nc:2,rpt:3,ask:4};
   const tabs=document.querySelectorAll('.ntab');
   if(map[id]!==undefined)tabs[map[id]].classList.add('on');
+  tabs.forEach(t=>t.setAttribute('aria-selected',t.classList.contains('on')?'true':'false'));
   if(id==='cf'&&!window._pChart){initCF();}
   if(id==='nc'&&!window._mChart){initNC();}
   if(id==='rpt'&&!window._aChart){initRpt();}
-  if(id==='ask'){calc();}
-  if(history.replaceState)history.replaceState(null,'','#'+id);
+  if(id==='ask'){ applyCalcParams(); calc(); /* calc()가 해시(쿼리 포함)를 직접 갱신 */ }
+  else if(history.replaceState){ history.replaceState(null,'','#'+id); }
   window.scrollTo({top:0});
 }
-document.querySelectorAll('.ntab').forEach(t=>t.addEventListener('click',()=>go(t.dataset.v)));
-window.addEventListener('hashchange',()=>go(location.hash.replace('#','')||'home'));
-if(location.hash)go(location.hash.replace('#',''));
+document.querySelectorAll('.ntab').forEach(t=>{
+  t.setAttribute('role','tab');
+  t.setAttribute('tabindex','0');
+  t.addEventListener('click',()=>go(t.dataset.v));
+  t.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();go(t.dataset.v);} });
+});
+window.addEventListener('hashchange',()=>go(viewFromHash()));
+if(location.hash)go(viewFromHash());
 
 // — Print / PDF export —
 // 현재 보이는 탭을 브라우저 인쇄(PDF 저장)로 내보냄. 의존성 없음 · 오프라인 동작.
@@ -1541,7 +1565,10 @@ function printDoc(){
 }
 
 // — Count-up animation —
+const PREFERS_REDUCED_MOTION = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 function countUp(el,target,suffix){
+  // 모션 최소화 설정 시 애니메이션 없이 최종값만 표시
+  if(PREFERS_REDUCED_MOTION){ el.textContent=Math.round(target).toLocaleString()+(suffix||''); return; }
   const dur=900,t0=performance.now();
   function step(t){
     const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);
@@ -1552,6 +1579,14 @@ function countUp(el,target,suffix){
 }
 
 // — Impact calculator —
+// 공유 링크로 들어온 경우 슬라이더 값을 해시 쿼리에서 복원
+function applyCalcParams(){
+  const q=new URLSearchParams(location.hash.split('?')[1]||'');
+  [['c-gu','gu'],['c-pp','pp'],['c-cy','cy']].forEach(([id,key])=>{
+    const v=q.get(key), el=document.getElementById(id);
+    if(v!==null&&el) el.value=v; // range input이 min/max 범위로 자동 보정
+  });
+}
 function calc(){
   const gu=+document.getElementById('c-gu').value;
   const pp=+document.getElementById('c-pp').value;
@@ -1563,6 +1598,16 @@ function calc(){
   countUp(document.getElementById('r-meas'),meas,'건');
   countUp(document.getElementById('r-data'),data,'개');
   countUp(document.getElementById('r-site'),site,'개소');
+  // 현재 시나리오를 공유 가능한 해시 쿼리로 직렬화
+  if(history.replaceState) history.replaceState(null,'','#ask?gu='+gu+'&pp='+pp+'&cy='+cy);
+}
+// 현재 시나리오 링크를 클립보드로 복사
+function shareCalc(btn){
+  calc();
+  const url=location.origin+location.pathname+location.hash;
+  const done=()=>{ if(!btn)return; const t=btn.textContent; btn.textContent='링크 복사됨 ✓'; setTimeout(()=>btn.textContent=t,1500); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(done,()=>prompt('아래 링크를 복사하세요',url)); }
+  else { prompt('아래 링크를 복사하세요',url); }
 }
 
 // — Client data —
@@ -1581,7 +1626,7 @@ const RN={high:'고위험',mid:'중위험',watch:'관찰군'};
 function renderC(f){
   const list=f==='all'?clients:clients.filter(c=>c.r===f);
   document.getElementById('ctbody').innerHTML=list.map((c,i)=>`
-  <tr onclick="openNC(${clients.indexOf(c)})">
+  <tr tabindex="0" role="button" aria-label="${c.n} 상세 보기" onclick="openNC(${clients.indexOf(c)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openNC(${clients.indexOf(c)})}">
     <td><strong>${c.n}</strong></td>
     <td style="color:var(--muted);">${c.a}</td>
     <td><span class="rp ${RL[c.r]}">${RN[c.r]}</span></td>
@@ -1732,7 +1777,7 @@ const tourBtn=document.createElement('button');
 tourBtn.id='tour-next';
 tourBtn.style.cssText='position:fixed;right:24px;bottom:24px;z-index:300;background:var(--brand);color:white;border:none;border-radius:99px;height:44px;padding:0 20px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,89,255,.35);cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;';
 document.body.appendChild(tourBtn);
-function curTab(){const t=(location.hash||'#home').replace('#','');return TOUR.includes(t)?t:'home';}
+function curTab(){const t=viewFromHash();return TOUR.includes(t)?t:'home';}
 function tourUpdate(){
   const i=TOUR.indexOf(curTab());
   const next=TOUR[(i+1)%TOUR.length];

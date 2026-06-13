@@ -54,3 +54,30 @@
 - [x] JS 문법·HTML 구조 검증 통과.
 - [x] 기존 기능(탭 전환·시뮬레이터·차트·투어) 회귀 없음(추가 전용 변경).
 - [x] 변경/검증 문서화(`verification-report.md`, `open-source-attribution.md`).
+
+---
+
+## 사이클 2 — 접근성 + 시뮬레이터 공유 링크 (구현 완료)
+
+`innovation-opportunities.md`의 IDEA 5(접근성)·IDEA 2(공유 링크)를 저리스크 추가 전용 변경으로 구현.
+
+### 개선안 #5 — 접근성 / 모션 배려
+- **목표**: 키보드·스크린리더·모션 민감 사용자 포용(공공 B2G 맥락의 신뢰 신호).
+- **구현**:
+  - 상단 탭(`.ntab`): JS로 `role="tab"`/`tabindex="0"`/Enter·Space 키 핸들러 부여, 컨테이너 `role="tablist"`, `go()`에서 `aria-selected` 동기화.
+  - 참여자 표 행: `tabindex="0"`/`role="button"`/`aria-label`/Enter·Space 키 핸들러.
+  - `:focus-visible` 포커스 링(탭·행·칩·버튼).
+  - `@media (prefers-reduced-motion: reduce)`로 CSS 애니메이션/전환 차단 + JS `countUp()`는 최종값 즉시 표시.
+- **롤백**: 해당 JS/CSS 블록·속성 제거 또는 `git revert`.
+- **DoD**: [x] 키보드로 탭·행 활성화, [x] 포커스 가시화, [x] reduced-motion 동작, [x] 회귀 없음.
+
+### 개선안 #2 — 시뮬레이터 시나리오 공유 링크
+- **목표**: 임팩트 시뮬레이터 값을 URL로 직렬화/복원해 "이 설정으로 보세요" 링크 공유.
+- **구현**:
+  - 해시 쿼리 라우팅: `#ask?gu=20&pp=500&cy=6`. `viewFromHash()`로 뷰 id에서 쿼리 분리, `go()`가 쿼리 허용.
+  - `calc()`가 현재 값을 `replaceState`로 해시에 직렬화. `applyCalcParams()`가 공유 링크 진입 시 슬라이더 복원(range가 min/max 자동 보정).
+  - "시나리오 링크 복사" 버튼(`shareCalc()`) → `navigator.clipboard`(미지원 시 `prompt` 폴백).
+  - 회귀 가드: 투어/방향키가 쓰는 `curTab()`도 쿼리 분리하도록 수정.
+- **API/DB**: 없음(클라이언트 전용).
+- **롤백**: `calc()`의 replaceState·`applyCalcParams`·`shareCalc`·버튼 제거, `go()/curTab()` 원복 또는 `git revert`.
+- **DoD**: [x] 공유 링크로 슬라이더 복원, [x] 값 변경 시 URL 갱신, [x] 복사 동작, [x] 투어/방향키 회귀 없음, [x] JS·HTML 검증 통과.

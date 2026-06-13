@@ -41,6 +41,36 @@
 - 없음. 본 변경으로 인한 신규 실패 없음.
 - 알려진 한계(범위 외): 외부 CDN 의존(오프라인 발표 리스크), 키보드 접근성, 하드코딩 날짜 — `innovation-opportunities.md`에 후속 항목으로 정리됨.
 
-## 결론
+## 결론 (사이클 1)
 
 추가 전용 변경으로 **회귀 위험 낮음**, 모든 정적 검증 통과. 인쇄/PDF 기능은 의존성·라이선스 리스크 없이 동작하며 기능 플래그로 비활성화 가능.
+
+---
+
+## 사이클 2 검증 — 접근성 + 공유 링크
+
+| # | 검증 | 결과 |
+|---|---|---|
+| 1 | JS 문법 `node --check` | ✅ PASS |
+| 2 | HTML 태그 균형 | ✅ PASS (미닫힘 0) |
+| 3 | 신규 요소 | role tablist/tab 1, aria-selected 1, prefers-reduced-motion 2, :focus-visible 2, shareCalc 2, applyCalcParams 2, tr onkeydown 1 → ✅ |
+| 4 | 핵심 함수 회귀 가드 | `go/calc/shareCalc/applyCalcParams/countUp/renderC/printDoc/viewFromHash/curTab` → ✅ 전부 OK |
+
+### 라우팅 로직 점검(수동 추론)
+- 공유 링크 `#ask?gu=20&pp=500&cy=6` 진입 → `viewFromHash()`가 `ask` 반환 → `applyCalcParams()`가 `location.hash`에서 20/500/6 복원 → `calc()`가 동일 쿼리로 `replaceState`. ✅
+- 일반 클릭 `go('ask')` → 쿼리 없음 → 슬라이더 유지, `calc()`가 현재값으로 URL 직렬화. ✅
+- `replaceState`는 `hashchange`를 발생시키지 않음 → **무한 루프 없음**. ✅
+- 투어 버튼/방향키가 쓰는 `curTab()`도 쿼리 분리하도록 수정 → ask 페이지(+쿼리)에서 투어 라벨/방향키 정상. ✅ (회귀 방지)
+
+### 수동 테스트 시나리오 (권장)
+1. **협업 제안** 탭 → 슬라이더 조정 → URL이 `#ask?gu=..&pp=..&cy=..`로 갱신되는지.
+2. "시나리오 링크 복사" → 클립보드 복사(또는 prompt 폴백), 버튼이 "링크 복사됨 ✓"로 1.5초 표시.
+3. 복사한 링크를 새 탭에 붙여넣기 → 슬라이더·결과 수치가 복원되는지.
+4. **키보드만으로**: Tab으로 상단 탭 이동 → Enter/Space로 탭 전환(포커스 링 보임). 참여자 표 행에 Tab 포커스 → Enter로 상세 진입.
+5. OS "동작 줄이기(Reduce Motion)" 켠 상태 → 카운트업이 즉시 최종값, 펄스/전환 멈춤.
+
+### 회귀 영향
+- 사이클 2도 **추가 전용**(라우팅은 쿼리 분리만 추가, 기존 경로 동작 보존). 기존 탭/차트/시뮬레이터/투어 동작 유지.
+
+## 종합 결론
+사이클 1·2 모두 정적 검증 통과, 새 의존성·서버 변경 0, 외부 OSS 코드 복사 0. 회귀 위험 낮음. 브라우저 인쇄·클립보드·reduced-motion은 환경 의존이라 사람이 1회 수동 확인 권장.
