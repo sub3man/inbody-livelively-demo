@@ -364,6 +364,28 @@ html,body{word-break:keep-all;}
   .home-stat-v{font-size:12px;}
   .rpt-meta{flex-wrap:wrap;}
 }
+
+/* ═══════════════════ PRINT / PDF EXPORT ═══════════════════ */
+/* 화면의 현재 탭만 인쇄용으로 출력 — 브라우저 인쇄(⌘P)/PDF 저장으로 제안 문서 생성 */
+@media print{
+  @page{ margin:14mm; }
+  html,body{ background:#fff !important; }
+  /* 화면 전용 UI 숨김 */
+  .nav, #tour-next, .chrome-bar, .live-dot, .nav-tag{ display:none !important; }
+  /* 현재 보이는 뷰만 출력 */
+  .view{ display:none !important; }
+  .view.on{ display:block !important; animation:none !important; }
+  .wrap{ max-width:100% !important; padding:0 !important; }
+  /* 브라우저 목업 그림자/테두리 정리 */
+  .cf-shell{ box-shadow:none !important; border:1px solid var(--border) !important; overflow:visible !important; }
+  .cf-body{ min-height:0 !important; }
+  /* 페이지 경계에서 카드가 잘리지 않도록 */
+  .card, .role-card, .kpi-strip, .loop, .nc-stage, .cf-shell, .rm-row, .sched-row, .tl{
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  /* 브랜드 색·배경이 인쇄에 반영되도록 */
+  *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+}
 </style>
 </head>
 <body>
@@ -626,7 +648,7 @@ html,body{word-break:keep-all;}
       <p class="pg-sub">통합돌봄 운영 대시보드 · 실시간 관리 현황</p>
     </div>
     <div style="margin-left:auto;display:flex;gap:8px;">
-      <button class="btn btn-ghost btn-sm">결과보고서 내보내기</button>
+      <button class="btn btn-ghost btn-sm" onclick="printDoc()">결과보고서 내보내기</button>
       <button class="btn btn-primary btn-sm">+ 신규 참여자</button>
     </div>
   </div>
@@ -855,7 +877,7 @@ html,body{word-break:keep-all;}
                 <button class="chip-tab" onclick="filterC('mid',this)">중위험 102</button>
                 <button class="chip-tab" onclick="filterC('watch',this)">관찰 77</button>
               </div>
-              <button class="btn btn-ghost btn-sm" style="margin-left:auto;">내보내기</button>
+              <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="printDoc()">내보내기</button>
             </div>
             <table class="tbl">
               <thead>
@@ -900,7 +922,7 @@ html,body{word-break:keep-all;}
       <p class="pg-sub" id="nc-meta">75세 · 여 · 동대문구 · <span class="rp rp-h">고위험</span></p>
     </div>
     <div style="margin-left:auto;display:flex;gap:8px;">
-      <button class="btn btn-ghost btn-sm">보호자 리포트</button>
+      <button class="btn btn-ghost btn-sm" onclick="printDoc()">보호자 리포트</button>
       <button class="btn btn-primary btn-sm">다음 방문 예약</button>
     </div>
   </div>
@@ -1190,7 +1212,7 @@ html,body{word-break:keep-all;}
       <div style="font-size:11px;color:var(--faint);margin-top:3px;">리포트 생성: 2026.06.12 · InBody × 리브라이블리 공동</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button class="btn btn-ghost btn-sm">PDF 내보내기</button>
+      <button class="btn btn-ghost btn-sm" onclick="printDoc()">PDF 내보내기</button>
       <button class="btn btn-primary btn-sm">B2G 제안 패키지</button>
     </div>
   </div>
@@ -1508,6 +1530,15 @@ function go(id) {
 document.querySelectorAll('.ntab').forEach(t=>t.addEventListener('click',()=>go(t.dataset.v)));
 window.addEventListener('hashchange',()=>go(location.hash.replace('#','')||'home'));
 if(location.hash)go(location.hash.replace('#',''));
+
+// — Print / PDF export —
+// 현재 보이는 탭을 브라우저 인쇄(PDF 저장)로 내보냄. 의존성 없음 · 오프라인 동작.
+const FEATURES={printExport:true};
+function printDoc(){
+  if(!FEATURES.printExport)return;
+  // 인쇄 전 카운트업/차트가 최종값으로 보이도록 짧게 양보 후 인쇄
+  requestAnimationFrame(()=>window.print());
+}
 
 // — Count-up animation —
 function countUp(el,target,suffix){
