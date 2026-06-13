@@ -29,7 +29,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{
-  font-family:"Pretendard Variable","Pretendard",-apple-system,sans-serif;
+  font-family:"Pretendard Variable","Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,Roboto,sans-serif;
   font-size:14px; color:var(--body); background:var(--bg-alt);
   -webkit-font-smoothing:antialiased; letter-spacing:-0.01em;
 }
@@ -1653,8 +1653,22 @@ function openNC(i){
 // — CF Charts —
 const P={brand:'#0059FF',border:'#E2E8F0',muted:'#6B7380',body:'#373737',tint2:'#E5EDFF',bg:'#F8FAFC'};
 
+// Chart.js(CDN)가 로드되지 않은 경우(오프라인 등) graceful degradation — 캔버스를 안내 문구로 대체
+function ensureChart(canvasId){
+  if(typeof Chart!=='undefined') return true;
+  const c=document.getElementById(canvasId);
+  if(c){
+    const d=document.createElement('div');
+    d.style.cssText='padding:32px 16px;text-align:center;color:var(--faint);font-size:12px;line-height:1.6;';
+    d.textContent='차트를 불러오지 못했습니다(오프라인). 네트워크 연결 후 새로고침하면 표시됩니다.';
+    c.replaceWith(d);
+  }
+  return false;
+}
+
 function initCF(){
   renderC('all');
+  if(!ensureChart('perf-chart'))return;
   const ctx=document.getElementById('perf-chart').getContext('2d');
   window._pChart=new Chart(ctx,{
     type:'bar',
@@ -1694,6 +1708,7 @@ function initNC(){
       el.style.width=w;
     });
   },100);
+  if(!ensureChart('prog-chart'))return;
   const ctx=document.getElementById('prog-chart').getContext('2d');
   const m=mdata.smi;
   window._mChart=new Chart(ctx,{
@@ -1725,6 +1740,7 @@ function switchM(k,el){
 
 // — Report Chart —
 function initRpt(){
+  if(!ensureChart('agg-chart'))return;
   const ctx=document.getElementById('agg-chart').getContext('2d');
   window._aChart=new Chart(ctx,{
     type:'bar',
