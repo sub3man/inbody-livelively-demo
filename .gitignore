@@ -1,0 +1,10 @@
+# vendor/fetch-assets.sh가 생성하는 백업/임시 파일
+index.html.bak
+*.tmp
+
+# OS / 에디터 부산물
+.DS_Store
+Thumbs.db
+*.swp
+.idea/
+.vscode/

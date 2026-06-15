@@ -6,14 +6,15 @@
 <title>InBody × 리브라이블리 — 측정을 건강성과로 연결하는 협업 데모</title>
 <meta name="description" content="InBody 정밀 측정 데이터를 고령자 생활현장의 방문운동·재측정 성과로 전환하는 InBodyLIKE 협업 시나리오 데모">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://sub3man.github.io/inbody-livelively-demo/">
 <meta property="og:title" content="InBody × 리브라이블리 협업 데모">
 <meta property="og:description" content="측정 → 위험분류 → 방문운동 → 재측정 → 리포트. 정밀 측정을 실제 건강성과로.">
-<meta property="og:image" content="photo-hero.jpg">
+<meta property="og:image" content="https://sub3man.github.io/inbody-livelively-demo/photo-hero.jpg">
 <meta property="og:locale" content="ko_KR">
 <meta name="twitter:card" content="summary_large_image">
 <meta name="twitter:title" content="InBody × 리브라이블리 협업 데모">
 <meta name="twitter:description" content="측정 → 위험분류 → 방문운동 → 재측정 → 리포트. 정밀 측정을 실제 건강성과로.">
-<meta name="twitter:image" content="photo-hero.jpg">
+<meta name="twitter:image" content="https://sub3man.github.io/inbody-livelively-demo/photo-hero.jpg">
 <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='22' fill='%230059FF'/><text x='50' y='68' font-size='52' font-weight='800' text-anchor='middle' fill='white' font-family='sans-serif'>리</text></svg>">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/pretendard@1.3.9/dist/web/variable/pretendardvariable.min.css">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.0/chart.umd.min.js"></script>
@@ -29,7 +30,7 @@
 }
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{
-  font-family:"Pretendard Variable","Pretendard",-apple-system,sans-serif;
+  font-family:"Pretendard Variable","Pretendard",-apple-system,BlinkMacSystemFont,"Apple SD Gothic Neo","Malgun Gothic","맑은 고딕",system-ui,Roboto,sans-serif;
   font-size:14px; color:var(--body); background:var(--bg-alt);
   -webkit-font-smoothing:antialiased; letter-spacing:-0.01em;
 }
@@ -364,6 +365,45 @@ html,body{word-break:keep-all;}
   .home-stat-v{font-size:12px;}
   .rpt-meta{flex-wrap:wrap;}
 }
+
+/* ═══════════════════ PRINT / PDF EXPORT ═══════════════════ */
+/* 화면의 현재 탭만 인쇄용으로 출력 — 브라우저 인쇄(⌘P)/PDF 저장으로 제안 문서 생성 */
+@media print{
+  @page{ margin:14mm; }
+  html,body{ background:#fff !important; }
+  /* 화면 전용 UI 숨김 */
+  .nav, #tour-next, .chrome-bar, .live-dot, .nav-tag{ display:none !important; }
+  /* 현재 보이는 뷰만 출력 */
+  .view{ display:none !important; }
+  .view.on{ display:block !important; animation:none !important; }
+  .wrap{ max-width:100% !important; padding:0 !important; }
+  /* 브라우저 목업 그림자/테두리 정리 */
+  .cf-shell{ box-shadow:none !important; border:1px solid var(--border) !important; overflow:visible !important; }
+  .cf-body{ min-height:0 !important; }
+  /* 페이지 경계에서 카드가 잘리지 않도록 */
+  .card, .role-card, .kpi-strip, .loop, .nc-stage, .cf-shell, .rm-row, .sched-row, .tl{
+    break-inside:avoid; page-break-inside:avoid;
+  }
+  /* 브랜드 색·배경이 인쇄에 반영되도록 */
+  *{ -webkit-print-color-adjust:exact !important; print-color-adjust:exact !important; }
+}
+
+/* ═══════════════════ ACCESSIBILITY ═══════════════════ */
+/* 키보드 포커스 가시화 (탭·참여자 행·칩·사이드바) */
+.ntab:focus-visible, .tbl tbody tr:focus-visible, .chip-tab:focus-visible,
+.cf-nav-item:focus-visible, .btn:focus-visible{
+  outline:2px solid var(--brand); outline-offset:2px; border-radius:4px;
+}
+/* 발표 모드(전체화면): nav 배지 정리해 화면 집중 */
+body.presenting .nav-tag:not(#fs-btn){ display:none; }
+
+/* 모션 최소화 선호 시 애니메이션·전환 비활성화 */
+@media (prefers-reduced-motion: reduce){
+  *, *::before, *::after{
+    animation-duration:.001ms !important; animation-iteration-count:1 !important;
+    transition-duration:.001ms !important; scroll-behavior:auto !important;
+  }
+}
 </style>
 </head>
 <body>
@@ -374,7 +414,7 @@ html,body{word-break:keep-all;}
     <span class="nav-x">×</span>
     <span class="nav-ll">리브라이블리</span>
   </div>
-  <div class="nav-tabs">
+  <div class="nav-tabs" role="tablist" aria-label="섹션 내비게이션">
     <div class="ntab on" data-v="home">파트너십 개요</div>
     <div class="ntab" data-v="cf">CareFlow OS</div>
     <div class="ntab" data-v="nc">NoriCare</div>
@@ -382,8 +422,12 @@ html,body{word-break:keep-all;}
     <div class="ntab" data-v="ask">협업 제안</div>
   </div>
   <div class="nav-end">
+    <button class="nav-tag" id="fs-btn" onclick="toggleFullscreen()" aria-label="발표 모드(전체화면) 전환 — 단축키 F" title="발표 모드 (F)" style="cursor:pointer;font-family:inherit;">
+      <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M8 21H5a2 2 0 01-2-2v-3M16 21h3a2 2 0 002-2v-3"/></svg>
+      <span id="fs-label">발표 모드</span>
+    </button>
     <div class="nav-tag"><span class="live-dot"></span>DEMO</div>
-    <div class="nav-tag">PoC D-38</div>
+    <div class="nav-tag" data-dday>PoC D-38</div>
   </div>
 </nav>
 
@@ -626,7 +670,7 @@ html,body{word-break:keep-all;}
       <p class="pg-sub">통합돌봄 운영 대시보드 · 실시간 관리 현황</p>
     </div>
     <div style="margin-left:auto;display:flex;gap:8px;">
-      <button class="btn btn-ghost btn-sm">결과보고서 내보내기</button>
+      <button class="btn btn-ghost btn-sm" onclick="printDoc()">결과보고서 내보내기</button>
       <button class="btn btn-primary btn-sm">+ 신규 참여자</button>
     </div>
   </div>
@@ -855,7 +899,7 @@ html,body{word-break:keep-all;}
                 <button class="chip-tab" onclick="filterC('mid',this)">중위험 102</button>
                 <button class="chip-tab" onclick="filterC('watch',this)">관찰 77</button>
               </div>
-              <button class="btn btn-ghost btn-sm" style="margin-left:auto;">내보내기</button>
+              <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="printDoc()">내보내기</button>
             </div>
             <table class="tbl">
               <thead>
@@ -900,7 +944,7 @@ html,body{word-break:keep-all;}
       <p class="pg-sub" id="nc-meta">75세 · 여 · 동대문구 · <span class="rp rp-h">고위험</span></p>
     </div>
     <div style="margin-left:auto;display:flex;gap:8px;">
-      <button class="btn btn-ghost btn-sm">보호자 리포트</button>
+      <button class="btn btn-ghost btn-sm" onclick="printDoc()">보호자 리포트</button>
       <button class="btn btn-primary btn-sm">다음 방문 예약</button>
     </div>
   </div>
@@ -918,7 +962,7 @@ html,body{word-break:keep-all;}
               <div class="cf-av" style="width:30px;height:30px;font-size:11px;">김</div>
             </div>
             <div style="padding:4px 0 12px;">
-              <div style="font-size:12px;color:var(--muted);">2026년 6월 12일 · 금</div>
+              <div style="font-size:12px;color:var(--muted);" data-today-k>2026년 6월 12일 · 금</div>
               <div style="font-size:22px;font-weight:800;color:var(--ink);letter-spacing:-0.025em;line-height:1.2;margin-top:4px;">안녕하세요,<br><span style="color:var(--brand);">김순자 회원님</span></div>
             </div>
             <div style="display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:10px;">
@@ -1187,10 +1231,10 @@ html,body{word-break:keep-all;}
   <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:20px;">
     <div>
       <span class="rpt-period">12주 PoC 시범운영 · 서울시 12개 자치구 · 2026 상반기 · n = 248</span>
-      <div style="font-size:11px;color:var(--faint);margin-top:3px;">리포트 생성: 2026.06.12 · InBody × 리브라이블리 공동</div>
+      <div style="font-size:11px;color:var(--faint);margin-top:3px;">리포트 생성: <span data-today-dot>2026.06.12</span> · InBody × 리브라이블리 공동</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button class="btn btn-ghost btn-sm">PDF 내보내기</button>
+      <button class="btn btn-ghost btn-sm" onclick="printDoc()">PDF 내보내기</button>
       <button class="btn btn-primary btn-sm">B2G 제안 패키지</button>
     </div>
   </div>
@@ -1408,6 +1452,7 @@ html,body{word-break:keep-all;}
     <div class="card-hd">
       <span style="font-size:14px;font-weight:800;color:var(--ink);text-transform:none;letter-spacing:-0.01em;">협업 임팩트 시뮬레이터</span>
       <span style="font-size:11px;color:var(--faint);font-weight:400;">확장 시 InBody 측정 수요가 어떻게 커지는지 직접 조절해 보세요 · 예시 가정</span>
+      <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="shareCalc(this)">시나리오 링크 복사</button>
     </div>
     <div class="calc-grid">
       <div style="padding:20px;border-right:1px solid var(--border-s);">
@@ -1490,7 +1535,10 @@ html,body{word-break:keep-all;}
 
 <script>
 // — Navigation —
+// 해시는 "#ask?gu=20&pp=500&cy=6"처럼 쿼리를 포함할 수 있음(시나리오 공유 링크).
+function viewFromHash(){ return (location.hash.replace('#','').split('?')[0])||'home'; }
 function go(id) {
+  id=(id||'').split('?')[0];
   if(!document.getElementById('v-'+id)) id='home';
   document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
   document.querySelectorAll('.ntab').forEach(t=>t.classList.remove('on'));
@@ -1498,19 +1546,54 @@ function go(id) {
   const map={home:0,cf:1,nc:2,rpt:3,ask:4};
   const tabs=document.querySelectorAll('.ntab');
   if(map[id]!==undefined)tabs[map[id]].classList.add('on');
+  tabs.forEach(t=>t.setAttribute('aria-selected',t.classList.contains('on')?'true':'false'));
   if(id==='cf'&&!window._pChart){initCF();}
   if(id==='nc'&&!window._mChart){initNC();}
   if(id==='rpt'&&!window._aChart){initRpt();}
-  if(id==='ask'){calc();}
-  if(history.replaceState)history.replaceState(null,'','#'+id);
+  if(id==='ask'){ applyCalcParams(); calc(); /* calc()가 해시(쿼리 포함)를 직접 갱신 */ }
+  else if(history.replaceState){ history.replaceState(null,'','#'+id); }
   window.scrollTo({top:0});
 }
-document.querySelectorAll('.ntab').forEach(t=>t.addEventListener('click',()=>go(t.dataset.v)));
-window.addEventListener('hashchange',()=>go(location.hash.replace('#','')||'home'));
-if(location.hash)go(location.hash.replace('#',''));
+document.querySelectorAll('.ntab').forEach(t=>{
+  t.setAttribute('role','tab');
+  t.setAttribute('tabindex','0');
+  t.addEventListener('click',()=>go(t.dataset.v));
+  t.addEventListener('keydown',e=>{ if(e.key==='Enter'||e.key===' '){e.preventDefault();go(t.dataset.v);} });
+});
+window.addEventListener('hashchange',()=>go(viewFromHash()));
+// 최초 딥링크 내비게이션은 스크립트 끝(모든 const/래퍼 정의 후)에서 수행 — TDZ 방지
+
+// — Dynamic dates (데모가 항상 '오늘' 기준으로 보이도록) —
+// PoC 시작 앵커는 고정(2026-07-20). D-카운터·리포트 생성일·앱 홈 날짜만 오늘 기준 계산.
+const POC_START=new Date(2026,6,20); // month는 0-based → 7월
+const WEEKDAYS=['일','월','화','수','목','금','토'];
+function pad2(n){return String(n).padStart(2,'0');}
+function fmtDot(d){return d.getFullYear()+'.'+pad2(d.getMonth()+1)+'.'+pad2(d.getDate());}
+function fmtKDate(d){return d.getFullYear()+'년 '+(d.getMonth()+1)+'월 '+d.getDate()+'일 · '+WEEKDAYS[d.getDay()];}
+function initDates(){
+  const t=new Date(), midnight=new Date(t.getFullYear(),t.getMonth(),t.getDate());
+  const dday=Math.round((POC_START-midnight)/86400000);
+  const ddayTxt = dday>0?('PoC D-'+dday) : dday===0?'PoC D-DAY' : 'PoC 진행중';
+  document.querySelectorAll('[data-dday]').forEach(el=>el.textContent=ddayTxt);
+  document.querySelectorAll('[data-today-dot]').forEach(el=>el.textContent=fmtDot(t));
+  document.querySelectorAll('[data-today-k]').forEach(el=>el.textContent=fmtKDate(t));
+}
+initDates();
+
+// — Print / PDF export —
+// 현재 보이는 탭을 브라우저 인쇄(PDF 저장)로 내보냄. 의존성 없음 · 오프라인 동작.
+const FEATURES={printExport:true};
+function printDoc(){
+  if(!FEATURES.printExport)return;
+  // 인쇄 전 카운트업/차트가 최종값으로 보이도록 짧게 양보 후 인쇄
+  requestAnimationFrame(()=>window.print());
+}
 
 // — Count-up animation —
+const PREFERS_REDUCED_MOTION = window.matchMedia && matchMedia('(prefers-reduced-motion: reduce)').matches;
 function countUp(el,target,suffix){
+  // 모션 최소화 설정 시 애니메이션 없이 최종값만 표시
+  if(PREFERS_REDUCED_MOTION){ el.textContent=Math.round(target).toLocaleString()+(suffix||''); return; }
   const dur=900,t0=performance.now();
   function step(t){
     const p=Math.min(1,(t-t0)/dur),e=1-Math.pow(1-p,3);
@@ -1521,6 +1604,14 @@ function countUp(el,target,suffix){
 }
 
 // — Impact calculator —
+// 공유 링크로 들어온 경우 슬라이더 값을 해시 쿼리에서 복원
+function applyCalcParams(){
+  const q=new URLSearchParams(location.hash.split('?')[1]||'');
+  [['c-gu','gu'],['c-pp','pp'],['c-cy','cy']].forEach(([id,key])=>{
+    const v=q.get(key), el=document.getElementById(id);
+    if(v!==null&&el) el.value=v; // range input이 min/max 범위로 자동 보정
+  });
+}
 function calc(){
   const gu=+document.getElementById('c-gu').value;
   const pp=+document.getElementById('c-pp').value;
@@ -1532,6 +1623,16 @@ function calc(){
   countUp(document.getElementById('r-meas'),meas,'건');
   countUp(document.getElementById('r-data'),data,'개');
   countUp(document.getElementById('r-site'),site,'개소');
+  // 현재 시나리오를 공유 가능한 해시 쿼리로 직렬화
+  if(history.replaceState) history.replaceState(null,'','#ask?gu='+gu+'&pp='+pp+'&cy='+cy);
+}
+// 현재 시나리오 링크를 클립보드로 복사
+function shareCalc(btn){
+  calc();
+  const url=location.origin+location.pathname+location.hash;
+  const done=()=>{ if(!btn)return; const t=btn.textContent; btn.textContent='링크 복사됨 ✓'; setTimeout(()=>btn.textContent=t,1500); };
+  if(navigator.clipboard&&navigator.clipboard.writeText){ navigator.clipboard.writeText(url).then(done,()=>prompt('아래 링크를 복사하세요',url)); }
+  else { prompt('아래 링크를 복사하세요',url); }
 }
 
 // — Client data —
@@ -1550,7 +1651,7 @@ const RN={high:'고위험',mid:'중위험',watch:'관찰군'};
 function renderC(f){
   const list=f==='all'?clients:clients.filter(c=>c.r===f);
   document.getElementById('ctbody').innerHTML=list.map((c,i)=>`
-  <tr onclick="openNC(${clients.indexOf(c)})">
+  <tr tabindex="0" role="button" aria-label="${c.n} 상세 보기" onclick="openNC(${clients.indexOf(c)})" onkeydown="if(event.key==='Enter'||event.key===' '){event.preventDefault();openNC(${clients.indexOf(c)})}">
     <td><strong>${c.n}</strong></td>
     <td style="color:var(--muted);">${c.a}</td>
     <td><span class="rp ${RL[c.r]}">${RN[c.r]}</span></td>
@@ -1577,16 +1678,45 @@ function openNC(i){
 // — CF Charts —
 const P={brand:'#0059FF',border:'#E2E8F0',muted:'#6B7380',body:'#373737',tint2:'#E5EDFF',bg:'#F8FAFC'};
 
+// ─────────────────────────────────────────────────────────────
+// DEMO DATA · 차트 데이터셋 — 다른 데모(자치구/대상자)로 교체 시 여기 수치만 수정
+// (참여자 목록은 위 clients[], 12주 추이는 mdata{}/wks[], 위험도 라벨은 RL/RN 참조)
+// ─────────────────────────────────────────────────────────────
+const perfChart={ // CareFlow: 8주 평균 기능개선율(%)
+  labels:['균형감각','보행속도','하지근기능','인지·반응','체력'],
+  data:[28,35,120,18,41],
+  colors:['#C8D8FF','#A8BEFF',P.brand,'#C8D8FF','#A8BEFF'],
+};
+const aggChart={ // 리포트: 전체 참여자 지표 개선율(%)
+  labels:['골격근량(SMI)','악력','보행속도','SPPB','체지방 감소'],
+  data:[17.3,27.6,25.6,25.0,9.8],
+  colors:[P.brand,'#0C39B7','#4D84FF','#A8BEFF','#C8D8FF'],
+};
+
+// Chart.js(CDN)가 로드되지 않은 경우(오프라인 등) graceful degradation — 캔버스를 안내 문구로 대체
+function ensureChart(canvasId){
+  if(typeof Chart!=='undefined') return true;
+  const c=document.getElementById(canvasId);
+  if(c){
+    const d=document.createElement('div');
+    d.style.cssText='padding:32px 16px;text-align:center;color:var(--faint);font-size:12px;line-height:1.6;';
+    d.textContent='차트를 불러오지 못했습니다(오프라인). 네트워크 연결 후 새로고침하면 표시됩니다.';
+    c.replaceWith(d);
+  }
+  return false;
+}
+
 function initCF(){
   renderC('all');
+  if(!ensureChart('perf-chart'))return;
   const ctx=document.getElementById('perf-chart').getContext('2d');
   window._pChart=new Chart(ctx,{
     type:'bar',
     data:{
-      labels:['균형감각','보행속도','하지근기능','인지·반응','체력'],
+      labels:perfChart.labels,
       datasets:[{
-        data:[28,35,120,18,41],
-        backgroundColor:['#C8D8FF','#A8BEFF',P.brand,'#C8D8FF','#A8BEFF'],
+        data:perfChart.data,
+        backgroundColor:perfChart.colors,
         borderRadius:5,borderSkipped:false,
       }]
     },
@@ -1618,6 +1748,7 @@ function initNC(){
       el.style.width=w;
     });
   },100);
+  if(!ensureChart('prog-chart'))return;
   const ctx=document.getElementById('prog-chart').getContext('2d');
   const m=mdata.smi;
   window._mChart=new Chart(ctx,{
@@ -1649,14 +1780,15 @@ function switchM(k,el){
 
 // — Report Chart —
 function initRpt(){
+  if(!ensureChart('agg-chart'))return;
   const ctx=document.getElementById('agg-chart').getContext('2d');
   window._aChart=new Chart(ctx,{
     type:'bar',
     data:{
-      labels:['골격근량(SMI)','악력','보행속도','SPPB','체지방 감소'],
+      labels:aggChart.labels,
       datasets:[{
-        data:[17.3,27.6,25.6,25.0,9.8],
-        backgroundColor:[P.brand,'#0C39B7','#4D84FF','#A8BEFF','#C8D8FF'],
+        data:aggChart.data,
+        backgroundColor:aggChart.colors,
         borderRadius:5,borderSkipped:false,
       }]
     },
@@ -1701,7 +1833,7 @@ const tourBtn=document.createElement('button');
 tourBtn.id='tour-next';
 tourBtn.style.cssText='position:fixed;right:24px;bottom:24px;z-index:300;background:var(--brand);color:white;border:none;border-radius:99px;height:44px;padding:0 20px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,89,255,.35);cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;';
 document.body.appendChild(tourBtn);
-function curTab(){const t=(location.hash||'#home').replace('#','');return TOUR.includes(t)?t:'home';}
+function curTab(){const t=viewFromHash();return TOUR.includes(t)?t:'home';}
 function tourUpdate(){
   const i=TOUR.indexOf(curTab());
   const next=TOUR[(i+1)%TOUR.length];
@@ -1715,7 +1847,36 @@ document.addEventListener('keydown',e=>{
   const i=TOUR.indexOf(curTab());
   if(e.key==='ArrowRight')go(TOUR[(i+1)%TOUR.length]);
   if(e.key==='ArrowLeft')go(TOUR[(i-1+TOUR.length)%TOUR.length]);
+  if(e.key==='f'||e.key==='F')toggleFullscreen();
 });
+
+// — Presenter / fullscreen mode (단축키 F · 발표 모드 버튼) —
+function toggleFullscreen(){
+  const d=document, el=d.documentElement;
+  const fsEl=d.fullscreenElement||d.webkitFullscreenElement;
+  // webkit 접두 API는 Promise가 아닌 undefined를 반환할 수 있어 .catch 전에 가드
+  if(!fsEl){
+    const req=el.requestFullscreen||el.webkitRequestFullscreen;
+    if(req){ const p=req.call(el); if(p&&p.catch)p.catch(()=>{}); }
+  } else {
+    const exit=d.exitFullscreen||d.webkitExitFullscreen;
+    if(exit){ const p=exit.call(d); if(p&&p.catch)p.catch(()=>{}); }
+  }
+}
+// 전체화면 상태에 맞춰 버튼 라벨/표시 동기화
+function _syncFsLabel(){
+  const on=!!(document.fullscreenElement||document.webkitFullscreenElement);
+  const lbl=document.getElementById('fs-label');
+  if(lbl) lbl.textContent=on?'나가기':'발표 모드';
+  document.body.classList.toggle('presenting',on);
+}
+document.addEventListener('fullscreenchange',_syncFsLabel);
+document.addEventListener('webkitfullscreenchange',_syncFsLabel);
+
+// — 최초 딥링크 내비게이션 (모든 const/차트 init/go 래퍼 정의 후 실행) —
+// 상단에서 호출하면 initCF/initNC/initRpt가 참조하는 하단 const(P, perfChart, mdata…)가
+// TDZ 상태라 #cf/#nc/#rpt 딥링크 로드 시 ReferenceError가 발생하므로 여기서 호출한다.
+if(location.hash)go(viewFromHash());
 </script>
 </body>
 </html>
