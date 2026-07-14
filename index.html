@@ -3,6 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#0059FF">
+    <link rel="canonical" href="https://sub3man.github.io/inbody-livelively-demo/">
 <title>InBody × 리브라이블리 — 측정을 건강성과로 연결하는 협업 데모</title>
 <meta name="description" content="InBody 정밀 측정 데이터를 고령자 생활현장의 방문운동·재측정 성과로 전환하는 InBodyLIKE 협업 시나리오 데모">
 <meta property="og:type" content="website">
@@ -422,7 +424,7 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
     <div class="ntab" data-v="ask">협업 제안</div>
   </div>
   <div class="nav-end">
-    <button class="nav-tag" id="fs-btn" onclick="toggleFullscreen()" aria-label="발표 모드(전체화면) 전환 — 단축키 F" title="발표 모드 (F)" style="cursor:pointer;font-family:inherit;">
+    <button type="button" class="nav-tag" id="fs-btn" onclick="toggleFullscreen()" aria-label="발표 모드(전체화면) 전환 — 단축키 F" title="발표 모드 (F)" style="cursor:pointer;font-family:inherit;">
       <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M8 3H5a2 2 0 00-2 2v3M16 3h3a2 2 0 012 2v3M8 21H5a2 2 0 01-2-2v-3M16 21h3a2 2 0 002-2v-3"/></svg>
       <span id="fs-label">발표 모드</span>
     </button>
@@ -442,8 +444,8 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
       <h1 class="home-title">측정 1회가,<br>1년 내내 반복되는 서비스가 됩니다</h1>
       <p class="home-desc mb16">InBody 측정은 대부분 1회로 끝납니다. 리브라이블리는 그 측정을 위험군 분류 → 방문운동 → <b style="color:var(--brand);">12주마다 재측정</b>으로 되돌아오는 폐쇄루프로 만들어, 서울시 통합돌봄 현장에서 InBody 데이터의 반복 가치를 실증합니다.</p>
       <div style="display:flex;gap:8px;">
-        <button class="btn btn-primary btn-sm" onclick="go('cf')">CareFlow OS 보기</button>
-        <button class="btn btn-ghost btn-sm" onclick="go('rpt')">성과 리포트</button>
+        <button type="button" class="btn btn-primary btn-sm" onclick="go('cf')">CareFlow OS 보기</button>
+        <button type="button" class="btn btn-ghost btn-sm" onclick="go('rpt')">성과 리포트</button>
       </div>
     </div>
     <div class="home-header-r">
@@ -653,7 +655,7 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
         <div style="font-size:16px;font-weight:800;color:white;letter-spacing:-0.02em;">육성기간 4개월 안에, 숫자로 증명되는 공동 PoC</div>
         <div style="font-size:12px;color:rgba(255,255,255,.55);margin-top:4px;">100~300명 · 12주 · 핵심지표 6개 · 공동 결과보고서</div>
       </div>
-      <button class="btn btn-primary" onclick="go('ask')">협업 제안 보기 →</button>
+      <button type="button" class="btn btn-primary" onclick="go('ask')">협업 제안 보기 →</button>
     </div>
   </div>
 
@@ -670,8 +672,8 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
       <p class="pg-sub">통합돌봄 운영 대시보드 · 실시간 관리 현황</p>
     </div>
     <div style="margin-left:auto;display:flex;gap:8px;">
-      <button class="btn btn-ghost btn-sm" onclick="printDoc()">결과보고서 내보내기</button>
-      <button class="btn btn-primary btn-sm">+ 신규 참여자</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="printDoc()">결과보고서 내보내기</button>
+      <button type="button" class="btn btn-primary btn-sm">+ 신규 참여자</button>
     </div>
   </div>
 
@@ -720,29 +722,29 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
           <div class="cf-mark">리</div>
           <div class="cf-mark-txt">CareFlow OS</div>
         </div>
-        <button class="cf-nav-item on">
+        <button type="button" class="cf-nav-item on">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="3" width="7" height="9" rx="1"/><rect x="14" y="3" width="7" height="5" rx="1"/><rect x="14" y="12" width="7" height="9" rx="1"/><rect x="3" y="16" width="7" height="5" rx="1"/></svg>
           대시보드
         </button>
-        <button class="cf-nav-item" onclick="go('nc')">
+        <button type="button" class="cf-nav-item" onclick="go('nc')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><circle cx="9" cy="7" r="3"/><path d="M2 21c.9-3.5 3.3-5 7-5s6 1.5 7 5"/><circle cx="17" cy="9" r="2.5"/><path d="M16 13.5c2 .2 4.2 1.4 5 4"/></svg>
           참여자
           <span class="cf-nb">248</span>
         </button>
-        <button class="cf-nav-item">
+        <button type="button" class="cf-nav-item">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="4" y="2" width="16" height="20" rx="2"/><path d="M8 6h2M8 10h2M8 14h2M14 6h2M14 10h2"/></svg>
           기관
         </button>
-        <button class="cf-nav-item">
+        <button type="button" class="cf-nav-item">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M3 9h18M8 2v4M16 2v4"/></svg>
           방문 일정
           <span class="cf-nb">14</span>
         </button>
-        <button class="cf-nav-item" onclick="go('rpt')">
+        <button type="button" class="cf-nav-item" onclick="go('rpt')">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><path d="M3 3v18h18"/><path d="M7 14l4-4 3 3 5-6"/></svg>
           리포트
         </button>
-        <button class="cf-nav-item">
+        <button type="button" class="cf-nav-item">
           <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.75" stroke-linecap="round"><rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0110 0v4"/></svg>
           정산
         </button>
@@ -774,7 +776,7 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--muted)" stroke-width="1.75" stroke-linecap="round"><path d="M6 16v-5a6 6 0 1112 0v5l1.5 2H4.5L6 16z"/><path d="M10 21h4"/></svg>
               <span style="position:absolute;top:-1px;right:-2px;width:6px;height:6px;background:var(--brand);border-radius:50%;border:1.5px solid white;"></span>
             </div>
-            <button class="btn btn-primary btn-sm">+ 참여자 등록</button>
+            <button type="button" class="btn btn-primary btn-sm">+ 참여자 등록</button>
             <div class="cf-av" style="cursor:pointer;">JC</div>
           </div>
         </div>
@@ -833,7 +835,7 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
             <div class="card">
               <div class="card-hd">
                 <span style="font-size:14px;font-weight:800;color:var(--ink);text-transform:none;letter-spacing:-0.01em;">오늘 방문 · 14건</span>
-                <button class="btn btn-ghost btn-sm" style="margin-left:auto;">전체 일정 →</button>
+                <button type="button" class="btn btn-ghost btn-sm" style="margin-left:auto;">전체 일정 →</button>
               </div>
               <div style="padding:0 16px;">
                 <div class="sched-row">
@@ -894,12 +896,12 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
             <div class="card-hd">
               <span style="font-size:14px;font-weight:800;color:var(--ink);text-transform:none;letter-spacing:-0.01em;">참여자 목록</span>
               <div class="chip-row" id="risk-tabs">
-                <button class="chip-tab on" onclick="filterC('all',this)">전체 248</button>
-                <button class="chip-tab" onclick="filterC('high',this)">고위험 69</button>
-                <button class="chip-tab" onclick="filterC('mid',this)">중위험 102</button>
-                <button class="chip-tab" onclick="filterC('watch',this)">관찰 77</button>
+                <button type="button" class="chip-tab on" onclick="filterC('all',this)">전체 248</button>
+                <button type="button" class="chip-tab" onclick="filterC('high',this)">고위험 69</button>
+                <button type="button" class="chip-tab" onclick="filterC('mid',this)">중위험 102</button>
+                <button type="button" class="chip-tab" onclick="filterC('watch',this)">관찰 77</button>
               </div>
-              <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="printDoc()">내보내기</button>
+              <button type="button" class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="printDoc()">내보내기</button>
             </div>
             <table class="tbl">
               <thead>
@@ -938,14 +940,14 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
 <div class="view" id="v-nc">
 <div class="wrap">
   <div style="display:flex;align-items:center;gap:10px;margin-bottom:18px;">
-    <button class="btn btn-ghost btn-sm" onclick="go('cf')">← CareFlow OS</button>
+    <button type="button" class="btn btn-ghost btn-sm" onclick="go('cf')">← CareFlow OS</button>
     <div>
       <h2 class="pg-title" id="nc-name">김순자</h2>
       <p class="pg-sub" id="nc-meta">75세 · 여 · 동대문구 · <span class="rp rp-h">고위험</span></p>
     </div>
     <div style="margin-left:auto;display:flex;gap:8px;">
-      <button class="btn btn-ghost btn-sm" onclick="printDoc()">보호자 리포트</button>
-      <button class="btn btn-primary btn-sm">다음 방문 예약</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="printDoc()">보호자 리포트</button>
+      <button type="button" class="btn btn-primary btn-sm">다음 방문 예약</button>
     </div>
   </div>
 
@@ -1161,10 +1163,10 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
       <div class="label mb4">12주 성과 추적</div>
       <div style="font-size:15px;font-weight:800;color:var(--ink);letter-spacing:-0.02em;margin-bottom:4px;" id="prog-title">골격근량 SMI (kg/m²)</div>
       <div class="chip-row" style="margin-bottom:14px;" id="prog-tabs">
-        <button class="chip-tab on" onclick="switchM('smi',this)">SMI</button>
-        <button class="chip-tab" onclick="switchM('sppb',this)">SPPB</button>
-        <button class="chip-tab" onclick="switchM('gait',this)">보행속도</button>
-        <button class="chip-tab" onclick="switchM('grip',this)">악력</button>
+        <button type="button" class="chip-tab on" onclick="switchM('smi',this)">SMI</button>
+        <button type="button" class="chip-tab" onclick="switchM('sppb',this)">SPPB</button>
+        <button type="button" class="chip-tab" onclick="switchM('gait',this)">보행속도</button>
+        <button type="button" class="chip-tab" onclick="switchM('grip',this)">악력</button>
       </div>
       <canvas id="prog-chart" height="180"></canvas>
     </div>
@@ -1234,8 +1236,8 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
       <div style="font-size:11px;color:var(--faint);margin-top:3px;">리포트 생성: <span data-today-dot>2026.06.12</span> · InBody × 리브라이블리 공동</div>
     </div>
     <div style="display:flex;gap:8px;">
-      <button class="btn btn-ghost btn-sm" onclick="printDoc()">PDF 내보내기</button>
-      <button class="btn btn-primary btn-sm">B2G 제안 패키지</button>
+      <button type="button" class="btn btn-ghost btn-sm" onclick="printDoc()">PDF 내보내기</button>
+      <button type="button" class="btn btn-primary btn-sm">B2G 제안 패키지</button>
     </div>
   </div>
 
@@ -1452,7 +1454,7 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
     <div class="card-hd">
       <span style="font-size:14px;font-weight:800;color:var(--ink);text-transform:none;letter-spacing:-0.01em;">협업 임팩트 시뮬레이터</span>
       <span style="font-size:11px;color:var(--faint);font-weight:400;">확장 시 InBody 측정 수요가 어떻게 커지는지 직접 조절해 보세요 · 예시 가정</span>
-      <button class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="shareCalc(this)">시나리오 링크 복사</button>
+      <button type="button" class="btn btn-ghost btn-sm" style="margin-left:auto;" onclick="shareCalc(this)">시나리오 링크 복사</button>
     </div>
     <div class="calc-grid">
       <div style="padding:20px;border-right:1px solid var(--border-s);">
@@ -1523,7 +1525,7 @@ body.presenting .nav-tag:not(#fs-btn){ display:none; }
         </div>
         <div style="margin-top:12px;display:flex;gap:8px;flex-wrap:wrap;">
           <a class="btn btn-primary btn-sm" href="mailto:ceo@livelively.kr">ceo@livelively.kr</a>
-          <a class="btn btn-ghost btn-sm" href="https://www.livelively.kr" target="_blank">www.livelively.kr</a>
+          <a class="btn btn-ghost btn-sm" href="https://www.livelively.kr" target="_blank" rel="noopener noreferrer">www.livelively.kr</a>
         </div>
       </div>
     </div>
@@ -1830,6 +1832,7 @@ if(document.getElementById('rs-smi'))riskCalc();
 const TOUR=['home','cf','nc','rpt','ask'];
 const TOURL={home:'\ud30c\ud2b8\ub108\uc2ed \uac1c\uc694',cf:'CareFlow OS',nc:'NoriCare \uc571',rpt:'\uc131\uacfc \ub9ac\ud3ec\ud2b8',ask:'\ud611\uc5c5 \uc81c\uc548'};
 const tourBtn=document.createElement('button');
+tourBtn.type='button';
 tourBtn.id='tour-next';
 tourBtn.style.cssText='position:fixed;right:24px;bottom:24px;z-index:300;background:var(--brand);color:white;border:none;border-radius:99px;height:44px;padding:0 20px;font-size:13px;font-weight:700;box-shadow:0 8px 24px rgba(0,89,255,.35);cursor:pointer;display:flex;align-items:center;gap:8px;font-family:inherit;';
 document.body.appendChild(tourBtn);
